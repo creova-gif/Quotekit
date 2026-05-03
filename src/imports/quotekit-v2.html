@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuoteKit v2 — Smart Proposal Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --serif:'Instrument Serif',serif;
+  --sans:'DM Sans',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --ink:#18181b;--ink-2:#52525b;--ink-3:#a1a1aa;--ink-4:#d4d4d8;
+  --canvas:#fafaf9;--surface:#ffffff;--surface-2:#f4f4f5;--surface-3:#e4e4e7;
+  --accent:#1d4ed8;--accent-light:#eff6ff;--accent-mid:#bfdbfe;--accent-dark:#1e3a8a;
+  --green:#16a34a;--green-light:#f0fdf4;--green-mid:#bbf7d0;
+  --amber:#b45309;--amber-light:#fffbeb;--amber-mid:#fde68a;
+  --red:#dc2626;--red-light:#fef2f2;--red-mid:#fca5a5;
+  --purple:#7c3aed;--purple-light:#f5f3ff;--purple-mid:#ddd6fe;
+  --border:#e4e4e7;--border-2:#d4d4d8;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 20px 40px rgba(0,0,0,.12),0 8px 16px rgba(0,0,0,.06);
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:20px;
+  --sidebar-w:224px;--topbar-h:52px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--sans);background:var(--canvas);color:var(--ink);font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* ── Shell ── */
+.shell{display:grid;grid-template-columns:var(--sidebar-w) 1fr;grid-template-rows:var(--topbar-h) 1fr;height:100vh;overflow:hidden}
+.topbar{grid-column:1/-1;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0;z-index:200}
+.sidebar{grid-row:2;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.main-content{grid-row:2;overflow:hidden;display:flex;flex-direction:column}
+.page{display:none;flex:1;overflow:hidden;flex-direction:column}
+.page.active{display:flex;animation:fadeUp .18s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.scroll-area{flex:1;overflow-y:auto;padding:28px 32px}
+
+/* ── Topbar ── */
+.tb-brand{width:var(--sidebar-w);height:100%;display:flex;align-items:center;gap:10px;padding:0 18px;border-right:1px solid var(--border);flex-shrink:0}
+.brand-icon{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.brand-icon svg{width:14px;height:14px;fill:#fff}
+.brand-name{font-family:var(--serif);font-size:17px;letter-spacing:-.2px}
+.brand-name em{font-style:italic;color:var(--accent)}
+.tb-nav{display:flex;align-items:center;gap:1px;padding:0 14px}
+.tb-ni{padding:6px 11px;border-radius:var(--r-sm);font-size:13px;color:var(--ink-2);cursor:pointer;transition:all .12s;white-space:nowrap}
+.tb-ni:hover{background:var(--surface-2);color:var(--ink)}
+.tb-ni.active{background:var(--accent-light);color:var(--accent)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;padding-right:16px}
+.tb-search{display:flex;align-items:center;gap:7px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:6px 11px;width:200px}
+.tb-search input{border:none;background:transparent;outline:none;font-size:13px;color:var(--ink);width:100%;font-family:var(--sans)}
+.tb-search input::placeholder{color:var(--ink-3)}
+.tb-search svg{width:13px;height:13px;color:var(--ink-3);flex-shrink:0}
+.btn{padding:6px 13px;border-radius:var(--r-md);font-size:13px;cursor:pointer;font-family:var(--sans);transition:all .12s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid var(--border);background:transparent;color:var(--ink-2)}
+.btn:hover{background:var(--surface-2);color:var(--ink)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-green{background:var(--green);border-color:var(--green);color:#fff}
+.btn-green:hover{background:#15803d}
+.btn-danger{background:var(--red-light);border-color:var(--red-mid);color:var(--red)}
+.btn svg{width:13px;height:13px}
+.tb-notif{width:30px;height:30px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all .12s}
+.tb-notif:hover{background:var(--surface-2)}
+.tb-notif svg{width:14px;height:14px;color:var(--ink-2)}
+.notif-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid var(--surface)}
+.tb-av{width:30px;height:30px;border-radius:50%;background:var(--accent-light);border:2px solid var(--accent-mid);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:500;color:var(--accent);cursor:pointer}
+
+/* ── Sidebar ── */
+.sb-label{padding:14px 14px 5px;font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3)}
+.sb-item{display:flex;align-items:center;gap:9px;padding:7px 10px;margin:1px 6px;border-radius:var(--r-md);cursor:pointer;color:var(--ink-2);font-size:13px;transition:all .12s}
+.sb-item svg{width:14px;height:14px;flex-shrink:0;opacity:.65}
+.sb-item:hover{background:var(--surface-2);color:var(--ink)}
+.sb-item:hover svg{opacity:1}
+.sb-item.active{background:var(--accent-light);color:var(--accent)}
+.sb-item.active svg{opacity:1}
+.sb-badge{margin-left:auto;font-size:10px;padding:1px 6px;border-radius:8px;font-weight:500}
+.sb-badge-gray{background:var(--surface-2);color:var(--ink-3)}
+.sb-badge-blue{background:var(--accent-light);color:var(--accent)}
+.sb-badge-green{background:var(--green-light);color:var(--green)}
+.sb-badge-red{background:var(--red-light);color:var(--red)}
+.sb-sep{height:1px;background:var(--border);margin:6px 14px}
+.sb-footer{margin-top:auto;padding:10px 6px;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--r-md);cursor:pointer;transition:background .12s}
+.sb-user:hover{background:var(--surface-2)}
+.sb-user-av{width:32px;height:32px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--accent);flex-shrink:0}
+.sb-user-name{font-size:13px;font-weight:500}
+.sb-user-plan{font-size:11px;color:var(--ink-3)}
+
+/* ── Common Components ── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.page-title{font-family:var(--serif);font-size:24px;letter-spacing:-.4px;font-weight:400}
+.page-title em{font-style:italic;color:var(--accent)}
+.section-title{font-size:14px;font-weight:500;margin-bottom:12px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;cursor:pointer;transition:all .18s}
+.stat-card:hover{border-color:var(--border-2);box-shadow:var(--shadow)}
+.stat-label{font-size:11.5px;color:var(--ink-3);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.stat-label svg{width:12px;height:12px}
+.stat-val{font-family:var(--serif);font-size:28px;letter-spacing:-1px;font-weight:400;margin-bottom:3px}
+.stat-delta{font-size:11.5px;display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px}
+.up{background:var(--green-light);color:var(--green)}
+.dn{background:var(--red-light);color:var(--red)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13.5px;font-weight:500}
+.card-action{font-size:12px;color:var(--accent);cursor:pointer}
+.card-action:hover{text-decoration:underline}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:400}
+.status-badge::before{content:'';width:5px;height:5px;border-radius:50%}
+.b-draft{background:var(--surface-2);color:var(--ink-3)}.b-draft::before{background:var(--ink-4)}
+.b-sent{background:var(--amber-light);color:var(--amber)}.b-sent::before{background:var(--amber)}
+.b-viewed{background:var(--accent-light);color:var(--accent)}.b-viewed::before{background:var(--accent)}
+.b-accepted{background:var(--green-light);color:var(--green)}.b-accepted::before{background:var(--green)}
+.b-rejected{background:var(--red-light);color:var(--red)}.b-rejected::before{background:var(--red)}
+.b-signed{background:var(--purple-light);color:var(--purple)}.b-signed::before{background:var(--purple)}
+.b-invoiced{background:#ecfdf5;color:#059669}.b-invoiced::before{background:#059669}
+.tag{font-size:11px;padding:2px 7px;border-radius:8px;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+.tag svg{width:10px;height:10px}
+.tag-blue{background:var(--accent-light);color:var(--accent)}
+.tag-green{background:var(--green-light);color:var(--green)}
+.tag-amber{background:var(--amber-light);color:var(--amber)}
+.tag-purple{background:var(--purple-light);color:var(--purple)}
+.tag-gray{background:var(--surface-2);color:var(--ink-2)}
+.toggle{width:32px;height:18px;border-radius:9px;cursor:pointer;position:relative;transition:background .18s;flex-shrink:0;background:var(--surface-3)}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left .18s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on::after{left:16px}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:var(--r-lg);font-size:13px;box-shadow:var(--shadow-lg);z-index:9999;transform:translateY(50px);opacity:0;transition:all .25s;display:flex;align-items:center;gap:8px}
+.toast.show{transform:none;opacity:1}
+.toast svg{width:14px;height:14px;flex-shrink:0}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:10px}
+
+/* ── Dashboard ── */
+.dash-welcome{margin-bottom:22px}
+.dash-welcome h1{font-family:var(--serif);font-size:26px;letter-spacing:-.5px;font-weight:400}
+.dash-welcome p{font-size:13.5px;color:var(--ink-2);margin-top:3px}
+.dash-grid{display:grid;grid-template-columns:1fr 340px;gap:18px;margin-bottom:18px}
+.pli{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.pli:last-child{border:none}
+.pli:hover{background:var(--surface-2)}
+.pli-icon{width:34px;height:34px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pli-icon svg{width:15px;height:15px}
+.pli-name{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pli-sub{font-size:12px;color:var(--ink-3)}
+.pli-amt{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right;flex-shrink:0}
+.chart-bars{display:flex;align-items:flex-end;gap:5px;height:90px;padding:0 18px 12px}
+.cb-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.cb-bar{width:100%;border-radius:3px 3px 0 0;cursor:pointer;transition:opacity .15s}
+.cb-bar:hover{opacity:.75}
+.cb-label{font-size:10px;color:var(--ink-3)}
+.act-item{display:flex;align-items:flex-start;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border)}
+.act-item:last-child{border:none}
+.act-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:500;flex-shrink:0}
+.act-text{font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.act-text strong{color:var(--ink);font-weight:500}
+.act-time{font-size:11px;color:var(--ink-4);margin-top:1px}
+.pipeline-row{display:flex;align-items:center;gap:10px;padding:9px 18px;border-bottom:1px solid var(--border)}
+.pipeline-row:last-child{border:none}
+.pipe-stage{width:80px;font-size:12.5px;color:var(--ink-2)}
+.pipe-bar-wrap{flex:1;height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.pipe-fill{height:100%;border-radius:3px}
+.pipe-val{font-size:12px;font-family:var(--mono);color:var(--ink-2);width:50px;text-align:right}
+.pipe-count{font-size:11px;color:var(--ink-3);width:24px;text-align:right}
+
+/* ── Builder ── */
+.bld-shell{flex:1;display:grid;grid-template-columns:1fr 298px;overflow:hidden}
+.bld-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:50px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.bld-back{display:flex;align-items:center;gap:4px;color:var(--ink-3);font-size:13px;cursor:pointer;transition:color .12s}
+.bld-back:hover{color:var(--ink)}
+.bld-back svg{width:13px;height:13px}
+.bld-sep{color:var(--border-2)}
+.bld-title{font-size:13.5px;font-weight:500;flex:1}
+.bld-save{font-size:11.5px;color:var(--green);display:flex;align-items:center;gap:4px}
+.bld-save svg{width:11px;height:11px}
+.bld-main{overflow-y:auto;background:var(--canvas);padding:24px}
+.bld-right{border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
+.r-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.r-tab{flex:1;padding:11px 4px;text-align:center;font-size:11.5px;color:var(--ink-3);cursor:pointer;border-bottom:2px solid transparent;transition:all .12s;white-space:nowrap}
+.r-tab:hover{color:var(--ink-2)}
+.r-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+.r-body{padding:14px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.r-panel{display:none}
+.r-panel.active{display:flex;flex-direction:column;gap:12px}
+.doc-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);max-width:740px;margin:0 auto;box-shadow:var(--shadow-lg);overflow:hidden}
+.doc-hdr{padding:30px 40px 26px;background:var(--ink);display:flex;justify-content:space-between;align-items:flex-start}
+.doc-brand-row{display:flex;align-items:center;gap:12px}
+.doc-brand-ico{width:40px;height:40px;background:rgba(255,255,255,.14);border-radius:9px;display:flex;align-items:center;justify-content:center}
+.doc-brand-ico svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:1.5}
+.doc-co-name{font-size:16px;font-weight:500;color:#fff;font-family:var(--serif)}
+.doc-co-tag{font-size:11.5px;color:rgba(255,255,255,.45);margin-top:1px}
+.doc-meta{text-align:right;color:rgba(255,255,255,.5);font-size:11.5px;line-height:1.9}
+.doc-meta strong{color:#fff;font-weight:500}
+.doc-sec-wrap{position:relative}
+.doc-sec-wrap:hover .sec-ctrl{opacity:1}
+.doc-sec-wrap:hover .doc-sec{outline:2px solid var(--accent-mid);outline-offset:-2px}
+.doc-sec{padding:24px 40px;border-bottom:1px solid var(--border);outline:2px solid transparent;transition:outline-color .15s}
+.doc-sec:last-child{border-bottom:none}
+.sec-ctrl{position:absolute;top:6px;right:6px;display:flex;gap:3px;opacity:0;transition:opacity .15s;z-index:10}
+.sc-btn{padding:3px 7px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:11px;color:var(--ink-2);cursor:pointer;font-family:var(--sans);transition:all .12s}
+.sc-btn:hover{background:var(--surface-2);border-color:var(--border-2)}
+.sc-btn.danger:hover{background:var(--red-light);border-color:var(--red-mid);color:var(--red)}
+.sec-lbl{font-size:9.5px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--ink-4);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.drag-grip{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:8px;cursor:grab}
+.drag-grip span{width:2px;height:2px;border-radius:50%;background:var(--ink-4)}
+.prop-h1{font-family:var(--serif);font-size:23px;letter-spacing:-.4px;font-weight:400;border:none;outline:none;width:100%;background:transparent;color:var(--ink);margin-bottom:4px;line-height:1.25}
+.prop-h2{font-size:13.5px;color:var(--ink-3);border:none;outline:none;width:100%;background:transparent}
+.client-blk{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;display:flex;gap:12px}
+.cl-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+.cl-name{font-size:13.5px;font-weight:500;margin-bottom:2px}
+.cl-sub{font-size:12px;color:var(--ink-3)}
+.cl-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+.cl-tag{font-size:11px;color:var(--ink-2);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2px 8px}
+.scope-txt{font-size:13.5px;color:var(--ink-2);line-height:1.75;outline:none;min-height:60px}
+.del-list{display:flex;flex-direction:column;gap:5px;margin-top:12px}
+.del-row{display:flex;align-items:center;gap:9px;padding:8px 11px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);font-size:13px}
+.del-chk{width:17px;height:17px;border-radius:4px;background:var(--green-light);border:1.5px solid var(--green-mid);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.del-chk svg{width:9px;height:9px;stroke:var(--green);stroke-width:2.5;fill:none}
+.ptbl{width:100%;border-collapse:collapse}
+.ptbl th{text-align:left;font-size:10.5px;font-weight:500;color:var(--ink-3);padding:8px 8px;border-bottom:1.5px solid var(--border);text-transform:uppercase;letter-spacing:.4px}
+.ptbl th:last-child,.ptbl td:last-child{text-align:right}
+.ptbl td{padding:11px 8px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top}
+.ptbl tr:last-child td{border-bottom:none}
+.iname{font-weight:500;margin-bottom:1px}
+.idesc{font-size:11.5px;color:var(--ink-3)}
+.add-item{text-align:center;padding:8px}
+.add-item-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--accent);cursor:pointer;padding:5px 12px;border-radius:var(--r-md);border:1.5px dashed var(--accent-mid);background:var(--accent-light);transition:all .12s;font-family:var(--sans)}
+.add-item-btn:hover{background:#dbeafe}
+.price-sum{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;margin-top:14px}
+.pr-row{display:flex;justify-content:space-between;padding:3px 0;font-size:13px}
+.pr-lbl{color:var(--ink-3)}
+.pr-val{font-family:var(--mono);font-size:12.5px}
+.pr-disc{color:var(--green)}
+.pr-total{padding-top:10px;margin-top:8px;border-top:1px solid var(--border-2);font-weight:500;font-size:14.5px}
+.pr-total .pr-val{color:var(--accent)}
+.tl{display:flex;gap:0;margin-top:8px}
+.tl-ph{flex:1}
+.tl-bar{height:6px;transition:background .2s}
+.tl-ph:first-child .tl-bar{border-radius:3px 0 0 3px}
+.tl-ph:last-child .tl-bar{border-radius:0 3px 3px 0}
+.tl-active{background:var(--accent)}
+.tl-future{background:var(--accent-mid)}
+.tl-name{font-size:10.5px;color:var(--ink-3);margin-top:6px}
+.tl-wk{font-size:11.5px;font-weight:500}
+.add-sec{padding:14px;text-align:center;border-top:1px dashed var(--border)}
+.add-sec-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-3);cursor:pointer;padding:6px 16px;border-radius:var(--r-lg);border:1px dashed var(--border);background:transparent;font-family:var(--sans);transition:all .12s}
+.add-sec-btn:hover{background:var(--surface-2);color:var(--ink)}
+.add-sec-btn svg{width:13px;height:13px}
+
+/* ── AI Panel ── */
+.ai-card{background:var(--purple-light);border:1px solid var(--purple-mid);border-radius:var(--r-lg);padding:13px}
+.ai-head{display:flex;align-items:center;gap:7px;margin-bottom:10px}
+.ai-ico{width:22px;height:22px;background:var(--purple);border-radius:5px;display:flex;align-items:center;justify-content:center}
+.ai-ico svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:2}
+.ai-title{font-size:12.5px;font-weight:500;color:#4c1d95}
+.ai-conf{margin-left:auto;font-size:10.5px;color:var(--purple);background:var(--purple-mid);padding:2px 7px;border-radius:8px}
+.ai-item{background:#fff;border:1px solid var(--purple-mid);border-radius:var(--r-md);padding:9px 11px;font-size:12px;color:#3b0764;line-height:1.55;cursor:pointer;transition:all .12s;margin-bottom:5px}
+.ai-item:last-of-type{margin-bottom:0}
+.ai-item:hover{background:var(--purple-light);border-color:#c4b5fd}
+.ai-tag{font-size:10px;font-weight:500;color:var(--purple);margin-bottom:3px;display:flex;align-items:center;gap:3px}
+.ai-tag svg{width:10px;height:10px}
+.ai-apply{width:100%;padding:8px;background:var(--purple);color:#fff;border:none;border-radius:var(--r-md);font-size:12.5px;cursor:pointer;font-family:var(--sans);transition:background .12s;margin-top:8px}
+.ai-apply:hover{background:#6d28d9}
+.insight-blk{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.ins-head{padding:9px 13px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:500}
+.ins-row{display:flex;align-items:flex-start;gap:9px;padding:10px 13px;border-bottom:1px solid var(--border);font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.ins-row:last-child{border:none}
+.ins-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.pp-blk{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.pp-head{padding:9px 13px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:12.5px;font-weight:500}
+.pp-row{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-bottom:1px solid var(--border);font-size:12.5px}
+.pp-row:last-child{border:none}
+.pp-lbl{color:var(--ink-2)}
+.send-card{border:1px solid var(--border);border-radius:var(--r-lg);padding:13px}
+.send-title{font-size:13px;font-weight:500;margin-bottom:10px}
+.send-input{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);font-size:12.5px;color:var(--ink);background:var(--surface-2);outline:none;font-family:var(--sans);transition:border-color .12s;margin-bottom:7px}
+.send-input:focus{border-color:var(--accent-mid);background:var(--surface)}
+.send-btns{display:flex;gap:5px}
+.send-btn{flex:1;padding:7px 4px;border-radius:var(--r-md);font-size:11.5px;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:4px;transition:all .12s;border:1px solid var(--border);background:transparent;color:var(--ink-2)}
+.send-btn:hover{background:var(--surface-2)}
+.send-btn svg{width:12px;height:12px}
+.send-btn-accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.send-btn-accent:hover{background:var(--accent-dark)}
+.track-card{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.track-head{padding:9px 13px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:500}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.track-item{display:flex;align-items:flex-start;gap:9px;padding:10px 13px;border-bottom:1px solid var(--border)}
+.track-item:last-child{border:none}
+.td-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:4px}
+.t-dot{width:7px;height:7px;border-radius:50%}
+.t-line{width:1px;flex:1;min-height:14px;background:var(--border);margin-top:3px}
+.track-txt{font-size:12.5px;color:var(--ink-2);line-height:1.4;flex:1}
+.track-txt strong{color:var(--ink);font-weight:500}
+.track-time{font-size:10.5px;color:var(--ink-4);margin-top:2px}
+.t-bar{height:3px;background:var(--surface-2);border-radius:2px;overflow:hidden;margin-top:5px}
+.t-fill{height:100%;background:var(--accent);border-radius:2px}
+
+/* ── E-Signature Panel ── */
+.esig-banner{background:var(--purple-light);border:1px solid var(--purple-mid);border-radius:var(--r-lg);padding:14px}
+.esig-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.esig-title{font-size:13px;font-weight:500;color:#4c1d95}
+.esig-status{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#4c1d95;margin-bottom:10px}
+.sig-block{background:#fff;border:1px solid var(--purple-mid);border-radius:var(--r-md);padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:6px;cursor:pointer;transition:all .12s}
+.sig-block:hover{border-color:#a78bfa}
+.sig-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+.sig-name{font-size:12.5px;font-weight:500;color:#3b0764}
+.sig-role{font-size:11px;color:#7c3aed}
+.sig-status{margin-left:auto;font-size:11px}
+.sig-pending{color:var(--amber)}
+.sig-signed{color:var(--green)}
+.audit-item{font-size:11.5px;color:var(--ink-2);padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start}
+.audit-item:last-child{border:none}
+.audit-time{font-size:10.5px;color:var(--ink-3);flex-shrink:0;width:70px}
+
+/* ── Invoice Panel ── */
+.inv-summary{background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--r-lg);padding:14px}
+.inv-title{font-size:13px;font-weight:500;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.inv-title svg{width:14px;height:14px}
+.inv-row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;color:#14532d}
+.inv-row strong{font-family:var(--mono)}
+.inv-milestone{background:#fff;border:1px solid var(--green-mid);border-radius:var(--r-md);padding:10px 12px;margin-top:10px}
+.inv-ms-row{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;padding:4px 0;border-bottom:1px solid var(--border)}
+.inv-ms-row:last-child{border:none}
+.ms-label{color:var(--ink-2)}
+.ms-amt{font-family:var(--mono);font-weight:500}
+.ms-status{font-size:10.5px;padding:2px 6px;border-radius:6px}
+.ms-paid{background:var(--green-light);color:var(--green)}
+.ms-due{background:var(--amber-light);color:var(--amber)}
+.ms-pending{background:var(--surface-2);color:var(--ink-3)}
+
+/* ── Project / Time Tracking ── */
+.project-card{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.proj-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.proj-title{font-size:13.5px;font-weight:500}
+.proj-progress{height:5px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin:8px 16px 0}
+.proj-fill{height:100%;background:var(--accent);border-radius:3px}
+.task-row{display:flex;align-items:center;gap:9px;padding:9px 16px;border-bottom:1px solid var(--border);font-size:13px}
+.task-row:last-child{border:none}
+.task-chk{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border-2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.task-chk.done{background:var(--green);border-color:var(--green)}
+.task-chk.done svg{display:block}
+.task-chk svg{display:none;width:9px;height:9px;stroke:#fff;stroke-width:2.5;fill:none}
+.task-name{flex:1}
+.task-name.done{text-decoration:line-through;color:var(--ink-3)}
+.task-time{font-size:12px;font-family:var(--mono);color:var(--ink-3)}
+.task-assignee{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:500;flex-shrink:0}
+.time-log{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.tl-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:12.5px}
+.tl-item:last-child{border:none}
+.tl-icon{width:28px;height:28px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tl-icon svg{width:13px;height:13px}
+.tl-name{flex:1;color:var(--ink-2)}
+.tl-dur{font-family:var(--mono);color:var(--ink);font-size:12px}
+.tl-billing{font-size:11px;color:var(--green)}
+
+/* ── Client Portal View ── */
+.portal-wrap{background:var(--canvas);min-height:100%;padding:32px}
+.portal-doc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);max-width:700px;margin:0 auto;box-shadow:var(--shadow-lg);overflow:hidden}
+.portal-header{background:var(--ink);padding:28px 36px;display:flex;justify-content:space-between;align-items:center}
+.portal-brand{font-family:var(--serif);font-size:18px;color:#fff}
+.portal-status{font-size:12px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px}
+.portal-status-dot{width:7px;height:7px;border-radius:50%;background:#4ade80}
+.portal-body{padding:28px 36px}
+.portal-section{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.portal-section:last-child{border:none;margin-bottom:0;padding-bottom:0}
+.portal-section-title{font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px}
+.portal-text{font-size:14px;color:var(--ink-2);line-height:1.75}
+.cta-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.cta-accept{flex:1;padding:12px;background:var(--green);color:#fff;border:none;border-radius:var(--r-lg);font-size:14px;font-weight:500;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.cta-accept:hover{background:#15803d}
+.cta-accept svg{width:16px;height:16px}
+.cta-decline{flex:1;padding:12px;background:transparent;color:var(--ink-2);border:1px solid var(--border);border-radius:var(--r-lg);font-size:14px;cursor:pointer;font-family:var(--sans);transition:all .15s}
+.cta-decline:hover{background:var(--surface-2)}
+.cta-comment{width:100%;padding:10px;background:transparent;color:var(--ink-2);border:1px solid var(--border);border-radius:var(--r-lg);font-size:13.5px;cursor:pointer;font-family:var(--sans);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.cta-comment:hover{background:var(--surface-2)}
+.cta-comment svg{width:14px;height:14px}
+.comment-box{display:none;margin-top:10px}
+.comment-box textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:13px;font-family:var(--sans);resize:vertical;min-height:80px;outline:none;background:var(--surface-2)}
+.comment-box textarea:focus{border-color:var(--accent-mid)}
+.sig-pad{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);height:80px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--ink-3);margin-top:12px;font-family:var(--serif);font-style:italic;font-size:20px;transition:all .15s}
+.sig-pad:hover{border-color:var(--accent-mid);background:var(--accent-light)}
+.pay-methods{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.pay-method{flex:1;min-width:100px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);text-align:center;cursor:pointer;transition:all .15s;font-size:12.5px}
+.pay-method:hover{border-color:var(--accent);background:var(--accent-light)}
+.pay-method.selected{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.pay-icon{font-size:18px;margin-bottom:4px}
+
+/* ── CRM / Clients ── */
+.client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:12px}
+.cc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;cursor:pointer;transition:all .18s}
+.cc:hover{border-color:var(--border-2);box-shadow:var(--shadow);transform:translateY(-1px)}
+.cc-top{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.cc-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+.cc-name{font-size:13.5px;font-weight:500;margin-bottom:1px}
+.cc-co{font-size:12px;color:var(--ink-3)}
+.cc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding-top:10px;border-top:1px solid var(--border)}
+.cc-stat{text-align:center}
+.cc-sv{font-size:14px;font-weight:500;font-family:var(--mono)}
+.cc-sl{font-size:10.5px;color:var(--ink-3);margin-top:1px}
+.crm-pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.pipe-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.pipe-col-head{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:space-between}
+.pipe-card{margin:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 11px;cursor:pointer;font-size:12.5px;transition:all .12s}
+.pipe-card:hover{border-color:var(--border-2);background:var(--surface)}
+.pipe-card-name{font-weight:500;margin-bottom:2px}
+.pipe-card-val{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+
+/* ── Templates ── */
+.tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(256px,1fr));gap:14px}
+.tc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;cursor:pointer;transition:all .18s}
+.tc:hover{border-color:var(--accent-mid);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.tc-prev{height:150px;display:flex;flex-direction:column;padding:16px;gap:5px;position:relative}
+.tc-bar{border-radius:3px;flex-shrink:0}
+.tc-badge{position:absolute;top:10px;right:10px;font-size:10px;padding:3px 7px;border-radius:8px}
+.tc-body{padding:12px 14px;border-top:1px solid var(--border)}
+.tc-name{font-size:13.5px;font-weight:500;margin-bottom:2px}
+.tc-desc{font-size:12px;color:var(--ink-3);line-height:1.4}
+.tc-meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11.5px;color:var(--ink-3)}
+
+/* ── Analytics ── */
+.an-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.an-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
+.an-title{font-size:13.5px;font-weight:500;margin-bottom:2px}
+.an-sub{font-size:12px;color:var(--ink-3);margin-bottom:14px}
+.funnel-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.f-label{font-size:12.5px;width:76px;color:var(--ink-2)}
+.f-wrap{flex:1;height:22px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.f-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11.5px;font-weight:500;color:#fff}
+.f-count{font-size:12.5px;font-family:var(--mono);width:28px;text-align:right}
+.perf-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.perf-row:last-child{border:none}
+
+/* ── Inbox ── */
+.inbox-list{display:flex;flex-direction:column;gap:0}
+.inbox-item{display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;position:relative}
+.inbox-item:hover{background:var(--surface-2)}
+.inbox-item.unread{background:var(--accent-light)}
+.inbox-item.unread::before{content:'';position:absolute;left:6px;top:50%;transform:translateY(-50%);width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.inbox-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:500;flex-shrink:0}
+.inbox-body{flex:1;min-width:0}
+.inbox-name{font-size:13.5px;font-weight:500;margin-bottom:2px}
+.inbox-preview{font-size:12.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inbox-time{font-size:11.5px;color:var(--ink-3);white-space:nowrap;margin-left:auto;flex-shrink:0}
+
+/* ── Settings ── */
+.settings-grid{display:grid;grid-template-columns:220px 1fr;gap:24px}
+.settings-nav{display:flex;flex-direction:column;gap:2px}
+.sn-item{padding:7px 11px;border-radius:var(--r-md);font-size:13px;color:var(--ink-2);cursor:pointer;transition:all .12s}
+.sn-item:hover{background:var(--surface-2)}
+.sn-item.active{background:var(--accent-light);color:var(--accent);font-weight:500}
+.settings-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px 24px}
+.settings-section{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.settings-section:last-child{border:none;margin-bottom:0;padding-bottom:0}
+.settings-section-title{font-size:14px;font-weight:500;margin-bottom:14px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.settings-row:last-child{margin-bottom:0}
+.settings-label{font-size:13.5px;color:var(--ink);flex:1}
+.settings-sub{font-size:12px;color:var(--ink-3);margin-top:1px}
+.settings-input{padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);font-size:13px;color:var(--ink);background:var(--surface-2);outline:none;font-family:var(--sans);transition:border-color .12s;width:220px}
+.settings-input:focus{border-color:var(--accent-mid)}
+.brand-preview{width:60px;height:60px;border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px dashed var(--border);transition:all .15s;font-size:10px;color:var(--ink-3);text-align:center}
+.brand-preview:hover{border-color:var(--accent-mid);background:var(--accent-light)}
+.color-swatch{width:28px;height:28px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.color-swatch:hover,.color-swatch.active{border-color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-brand">
+    <div class="brand-icon"><svg viewBox="0 0 16 16"><path d="M2 3h8l3 4.5-3 4.5H2l3-4.5z"/></svg></div>
+    <span class="brand-name">Quote<em>Kit</em></span>
+  </div>
+  <nav class="tb-nav">
+    <div class="tb-ni active" onclick="go('dashboard')">Dashboard</div>
+    <div class="tb-ni" onclick="go('builder')">Builder</div>
+    <div class="tb-ni" onclick="go('clients')">Clients</div>
+    <div class="tb-ni" onclick="go('portal')">Client portal</div>
+    <div class="tb-ni" onclick="go('projects')">Projects</div>
+    <div class="tb-ni" onclick="go('templates')">Templates</div>
+    <div class="tb-ni" onclick="go('analytics')">Analytics</div>
+    <div class="tb-ni" onclick="go('inbox')">Inbox <span class="sb-badge sb-badge-red" style="margin-left:4px">3</span></div>
+    <div class="tb-ni" onclick="go('settings')">Settings</div>
+  </nav>
+  <div class="tb-right">
+    <div class="tb-search">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search…">
+    </div>
+    <div class="tb-notif"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot"></div></div>
+    <button class="btn btn-primary" onclick="go('builder')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New proposal</button>
+    <div class="tb-av">SA</div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div style="padding-top:6px;flex:1;overflow-y:auto">
+    <div class="sb-label">Workspace</div>
+    <div class="sb-item active" onclick="go('dashboard')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Overview<span class="sb-badge sb-badge-gray" id="sb-n-dash">24</span></div>
+    <div class="sb-item" onclick="go('builder')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Proposal builder</div>
+    <div class="sb-item" onclick="go('clients')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Clients<span class="sb-badge sb-badge-gray">6</span></div>
+    <div class="sb-item" onclick="go('portal')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Client portal</div>
+    <div class="sb-item" onclick="go('projects')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Projects<span class="sb-badge sb-badge-blue">5</span></div>
+    <div class="sb-item" onclick="go('templates')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="10" height="11" rx="1"/><rect x="16" y="10" width="5" height="5" rx="1"/></svg>Templates<span class="sb-badge sb-badge-green">New</span></div>
+    <div class="sb-item" onclick="go('analytics')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</div>
+    <div class="sb-item" onclick="go('inbox')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Inbox<span class="sb-badge sb-badge-red">3</span></div>
+    <div class="sb-sep"></div>
+    <div class="sb-label">Recent</div>
+    <div class="sb-item" style="font-size:12.5px" onclick="go('builder')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M9 12h6M9 16h4M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>Volta Goods — Brand</div>
+    <div class="sb-item" style="font-size:12.5px" onclick="go('builder')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M9 12h6M9 16h4M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>Opal Events — Retainer</div>
+    <div class="sb-item" style="font-size:12.5px" onclick="go('builder')"><svg fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M9 12h6M9 16h4M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>Meridian — Dev Sprint</div>
+  </div>
+  <div class="sb-footer">
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r-md);padding:9px 11px;margin-bottom:6px;cursor:pointer" onclick="go('settings')">
+      <div style="font-size:11px;color:#92400e;margin-bottom:2px">Pro plan · 28 days left</div>
+      <div style="font-size:12px;color:#b45309;font-weight:500">Upgrade to Business →</div>
+    </div>
+    <div class="sb-user"><div class="sb-user-av">SA</div><div><div class="sb-user-name">Sofia Adeyemi</div><div class="sb-user-plan">sofia@studiosa.co</div></div></div>
+  </div>
+</aside>
+
+<main class="main-content">
+
+<!-- ═══════ DASHBOARD ═══════ -->
+<div class="page active" id="page-dashboard">
+  <div class="scroll-area">
+    <div class="dash-welcome"><h1>Good morning, <em>Sofia.</em></h1><p>3 proposals need follow-up · 1 contract awaiting signature · $4,500 invoice due today</p></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 12h6M9 16h4M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>Active proposals</div><div class="stat-val">24</div><div class="stat-delta up">↑ 3 this week</div></div>
+      <div class="stat-card"><div class="stat-label"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Open rate</div><div class="stat-val">78%</div><div class="stat-delta up">↑ 12% vs last mo</div></div>
+      <div class="stat-card"><div class="stat-label"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Win rate</div><div class="stat-val">41%</div><div class="stat-delta dn">↓ 3% vs last mo</div></div>
+      <div class="stat-card"><div class="stat-label"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Revenue closed</div><div class="stat-val">$28.4k</div><div class="stat-delta up">↑ $4.2k vs last mo</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 340px;gap:16px;margin-bottom:16px">
+      <!-- Proposals -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">Recent proposals</div><div class="card-action" onclick="go('builder')">View all →</div></div>
+        <div id="dash-proposals"></div>
+      </div>
+      <!-- Pipeline -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">Sales pipeline</div><div class="card-action">$94k total</div></div>
+        <div style="padding:6px 0" id="dash-pipeline"></div>
+      </div>
+      <!-- Activity -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">Activity</div><div class="card-action">Mark read</div></div>
+        <div id="dash-activity"></div>
+      </div>
+    </div>
+    <!-- Revenue chart -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><div class="card-title">Revenue · 6 months</div><div style="display:flex;gap:12px;font-size:12px;color:var(--ink-3)"><span>Target: <strong style="color:var(--green)">$45k/mo</strong></span><span>Avg: <strong>$22.4k</strong></span></div></div>
+      <div class="chart-bars" id="dash-chart"></div>
+    </div>
+    <!-- Invoices due -->
+    <div class="card">
+      <div class="card-head"><div class="card-title">Invoices due</div><div class="card-action" onclick="go('projects')">Manage all</div></div>
+      <div id="dash-invoices"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ BUILDER ═══════ -->
+<div class="page" id="page-builder">
+  <div class="bld-topbar">
+    <div class="bld-back" onclick="go('dashboard')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Proposals</div>
+    <span class="bld-sep">/</span>
+    <div class="bld-title">Brand Identity & Website — Volta Goods</div>
+    <span class="status-badge b-draft">Draft</span>
+    <div class="bld-save"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Auto-saved</div>
+    <div style="margin-left:auto;display:flex;gap:7px">
+      <button class="btn" onclick="toast('Preview opened in new tab')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview</button>
+      <button class="btn" onclick="toast('Exported as PDF')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
+      <button class="btn btn-primary" onclick="toast('✓ Proposal sent to marcus@voltagoods.co')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send</button>
+    </div>
+  </div>
+  <div class="bld-shell">
+    <div class="bld-main">
+      <div class="doc-wrap">
+        <div class="doc-hdr">
+          <div class="doc-brand-row"><div class="doc-brand-ico"><svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div><div class="doc-co-name">Sofia Adeyemi Studio</div><div class="doc-co-tag">Brand · Web · Strategy</div></div></div>
+          <div class="doc-meta"><div>Proposal <strong>#QK-0041</strong></div><div>Apr 7, 2026</div><div>Valid: <strong>May 7, 2026</strong></div></div>
+        </div>
+        <!-- Cover -->
+        <div class="doc-sec-wrap"><div class="sec-ctrl"><div class="sc-btn" onclick="toast('Duplicated')">Dupe</div><div class="sc-btn danger" onclick="toast('Removed')">Remove</div></div>
+        <div class="doc-sec"><div class="sec-lbl"><div class="drag-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div>Cover</div>
+        <input class="prop-h1" value="Brand Identity & Website — Full Package"><input class="prop-h2" value="Prepared exclusively for Volta Goods · April 2026"></div></div>
+        <!-- Client -->
+        <div class="doc-sec-wrap"><div class="sec-ctrl"><div class="sc-btn" onclick="toast('Change client')">Change</div><div class="sc-btn danger" onclick="toast('Removed')">Remove</div></div>
+        <div class="doc-sec"><div class="sec-lbl"><div class="drag-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div>Prepared for</div>
+        <div class="client-blk"><div class="cl-av" style="background:#dbeafe;color:#1d4ed8">VG</div><div><div class="cl-name">Marcus Chen — Volta Goods</div><div class="cl-sub">m.chen@voltagoods.co</div><div class="cl-tags"><div class="cl-tag">Toronto, ON</div><div class="cl-tag">E-commerce</div><div class="cl-tag">Consumer goods</div></div></div></div></div></div>
+        <!-- Scope -->
+        <div class="doc-sec-wrap"><div class="sec-ctrl"><div class="sc-btn" onclick="toast('AI rewriting…')">AI rewrite</div><div class="sc-btn danger" onclick="toast('Removed')">Remove</div></div>
+        <div class="doc-sec"><div class="sec-lbl"><div class="drag-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div>Scope of work</div>
+        <div class="scope-txt" contenteditable="true"><p>We will design a complete brand identity for Volta Goods — including logo, colour system, typography, and brand guidelines — then translate that identity into a high-converting Shopify storefront optimised for your target customer.</p></div>
+        <div class="del-list"><div class="del-row"><div class="del-chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Logo suite (primary, secondary, icon variants)</div><div class="del-row"><div class="del-chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Brand guidelines PDF + Figma file</div><div class="del-row"><div class="del-chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>5-page Shopify storefront</div><div class="del-row"><div class="del-chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Mobile-first responsive implementation</div><div class="del-row"><div class="del-chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>2-week post-launch support</div></div></div></div>
+        <!-- Pricing -->
+        <div class="doc-sec-wrap"><div class="sec-ctrl"><div class="sc-btn" onclick="addItem()">Add item</div><div class="sc-btn danger" onclick="toast('Removed')">Remove</div></div>
+        <div class="doc-sec"><div class="sec-lbl"><div class="drag-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div>Investment</div>
+        <table class="ptbl"><thead><tr><th style="width:44%">Service</th><th style="width:10%">Qty</th><th style="width:14%">Rate</th><th style="width:12%">Disc</th><th>Total</th></tr></thead>
+        <tbody id="ptbl-body">
+          <tr><td><div class="iname">Brand identity design</div><div class="idesc">Logo, colour, typography, guidelines</div></td><td>1</td><td>$3,800</td><td>—</td><td style="font-family:var(--mono);font-weight:500">$3,800</td></tr>
+          <tr><td><div class="iname">Shopify storefront</div><div class="idesc">5 pages, responsive, CMS</div></td><td>1</td><td>$4,200</td><td>—</td><td style="font-family:var(--mono);font-weight:500">$4,200</td></tr>
+          <tr><td><div class="iname">Post-launch support</div><div class="idesc">2 weeks, fixes, training</div></td><td>1</td><td>$800</td><td style="color:var(--green)">−10%</td><td style="font-family:var(--mono);font-weight:500;color:var(--green)">$720</td></tr>
+        </tbody></table>
+        <!-- Interactive pricing packages -->
+        <div style="margin-top:14px;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+          <div style="padding:9px 12px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:12px;font-weight:500;color:var(--ink-2)">Tiered packages (client can select)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
+            <div style="padding:12px;border-right:1px solid var(--border);cursor:pointer" onclick="selectPkg(this,'Starter')"><div style="font-size:11px;color:var(--ink-3);margin-bottom:3px">Starter</div><div style="font-size:15px;font-weight:500;font-family:var(--mono)">$3,800</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">Brand only</div></div>
+            <div style="padding:12px;border-right:1px solid var(--border);cursor:pointer;background:var(--accent-light);border-top:2px solid var(--accent)" onclick="selectPkg(this,'Full Package')"><div style="font-size:10px;font-weight:500;color:var(--accent);margin-bottom:3px">★ RECOMMENDED</div><div style="font-size:15px;font-weight:500;font-family:var(--mono);color:var(--accent)">$8,720</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">Brand + Web</div></div>
+            <div style="padding:12px;cursor:pointer" onclick="selectPkg(this,'Growth')"><div style="font-size:11px;color:var(--ink-3);margin-bottom:3px">Growth</div><div style="font-size:15px;font-weight:500;font-family:var(--mono)">$10,500</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">Brand + Web + SEO</div></div>
+          </div>
+        </div>
+        <div class="add-item"><div class="add-item-btn" onclick="addItem()"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add line item</div></div>
+        <div class="price-sum"><div class="pr-row"><div class="pr-lbl">Subtotal</div><div class="pr-val">$8,800.00</div></div><div class="pr-row"><div class="pr-lbl">Discount</div><div class="pr-val pr-disc">−$80.00</div></div><div class="pr-row"><div class="pr-lbl">Tax (HST 13%)</div><div class="pr-val">$1,130.60</div></div><div class="pr-row pr-total"><div>Total</div><div class="pr-val">$9,850.60</div></div></div>
+        </div></div>
+        <!-- Timeline -->
+        <div class="doc-sec-wrap"><div class="sec-ctrl"><div class="sc-btn" onclick="toast('Edit timeline')">Edit</div><div class="sc-btn danger" onclick="toast('Removed')">Remove</div></div>
+        <div class="doc-sec"><div class="sec-lbl"><div class="drag-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div>Timeline</div>
+        <div class="tl"><div class="tl-ph"><div class="tl-bar tl-active" style="border-radius:3px 0 0 3px"></div><div class="tl-name">Discovery</div><div class="tl-wk">Wk 1</div></div><div class="tl-ph"><div class="tl-bar tl-active"></div><div class="tl-name">Brand design</div><div class="tl-wk">Wk 2–3</div></div><div class="tl-ph"><div class="tl-bar tl-active"></div><div class="tl-name">Web design</div><div class="tl-wk">Wk 4–5</div></div><div class="tl-ph"><div class="tl-bar tl-future"></div><div class="tl-name">Development</div><div class="tl-wk">Wk 6–7</div></div><div class="tl-ph"><div class="tl-bar tl-future" style="border-radius:0 3px 3px 0"></div><div class="tl-name">Launch</div><div class="tl-wk">Wk 8–10</div></div></div></div></div>
+        <!-- Payment Terms -->
+        <div class="doc-sec-wrap"><div class="sec-ctrl"><div class="sc-btn" onclick="toast('Edit terms')">Edit</div><div class="sc-btn danger" onclick="toast('Removed')">Remove</div></div>
+        <div class="doc-sec"><div class="sec-lbl"><div class="drag-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div>Payment terms</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px"><div style="font-size:10.5px;color:var(--ink-3);margin-bottom:3px">Deposit (due now)</div><div style="font-size:14px;font-weight:500;font-family:var(--mono)">$3,000</div><div style="font-size:11px;color:var(--ink-3)">30% to begin</div></div>
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px"><div style="font-size:10.5px;color:var(--ink-3);margin-bottom:3px">Milestone 2 (Wk 5)</div><div style="font-size:14px;font-weight:500;font-family:var(--mono)">$3,925</div><div style="font-size:11px;color:var(--ink-3)">On design approval</div></div>
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px"><div style="font-size:10.5px;color:var(--ink-3);margin-bottom:3px">Final (Wk 10)</div><div style="font-size:14px;font-weight:500;font-family:var(--mono)">$2,925.60</div><div style="font-size:11px;color:var(--ink-3)">On launch</div></div>
+        </div>
+        <div style="margin-top:10px;font-size:12.5px;color:var(--ink-3);line-height:1.6">2 revision rounds included per phase · Additional revisions billed at $150/hr · Late payments subject to 1.5% monthly interest · Proposal valid for 30 days</div>
+        </div></div>
+        <div class="add-sec"><button class="add-sec-btn" onclick="toast('Section picker opened')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add section</button></div>
+      </div>
+    </div>
+    <!-- Right panel -->
+    <div class="bld-right">
+      <div class="r-tabs">
+        <div class="r-tab active" onclick="rTab(this,'ai')">AI</div>
+        <div class="r-tab" onclick="rTab(this,'esig')">E-sign</div>
+        <div class="r-tab" onclick="rTab(this,'invoice')">Invoice</div>
+        <div class="r-tab" onclick="rTab(this,'pricing')">Pricing</div>
+        <div class="r-tab" onclick="rTab(this,'send')">Send</div>
+        <div class="r-tab" onclick="rTab(this,'track')">Track</div>
+      </div>
+      <div class="r-body">
+        <!-- AI Panel -->
+        <div class="r-panel active" id="rp-ai">
+          <div class="ai-card">
+            <div class="ai-head"><div class="ai-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg></div><div class="ai-title">AI suggestions</div><div class="ai-conf">3 insights</div></div>
+            <div class="ai-item" onclick="toast('Adding social proof section…')"><div class="ai-tag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Conversion +34%</div>Add a "Why us" section — proposals with social proof close significantly faster.</div>
+            <div class="ai-item" onclick="toast('SEO add-on added…')"><div class="ai-tag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Upsell</div>SEO setup not covered. Add as optional add-on at $400 — increases avg. deal by 5%.</div>
+            <div class="ai-item" onclick="toast('Scope rewritten with outcome-first framing…')"><div class="ai-tag"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Writing</div>Lead with the client's business outcome, not your deliverables list.</div>
+            <button class="ai-apply" onclick="toast('✓ All suggestions applied')">Apply all suggestions</button>
+          </div>
+          <div class="insight-blk">
+            <div class="ins-head"><span>Completeness · 82/100</span><span style="font-size:11.5px;color:var(--amber)">Needs work</span></div>
+            <div class="ins-row"><div class="ins-dot" style="background:var(--amber)"></div><div>Pricing is 18% below market median. Consider raising brand design to $4,400.</div></div>
+            <div class="ins-row"><div class="ins-dot" style="background:var(--amber)"></div><div>Add e-signature block — contracts without it take 2.4× longer to close.</div></div>
+            <div class="ins-row"><div class="ins-dot" style="background:var(--green)"></div><div>Timeline and payment terms are clear and well structured.</div></div>
+          </div>
+        </div>
+        <!-- E-Signature Panel -->
+        <div class="r-panel" id="rp-esig">
+          <div class="esig-banner">
+            <div class="esig-head"><div class="ai-ico" style="background:var(--purple)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><div class="esig-title">E-signature (ESIGN/eIDAS compliant)</div></div>
+            <div class="esig-status"><div style="width:7px;height:7px;border-radius:50%;background:var(--amber)"></div>Awaiting signatures</div>
+            <div class="sig-block" onclick="toast('Signature request sent to Sofia')"><div class="sig-av" style="background:var(--accent-light);color:var(--accent)">SA</div><div><div class="sig-name">Sofia Adeyemi</div><div class="sig-role">Service provider</div></div><div class="sig-status sig-signed">✓ Signed Apr 7</div></div>
+            <div class="sig-block" onclick="toast('Reminder sent to Marcus')"><div class="sig-av" style="background:#dbeafe;color:#1d4ed8">MC</div><div><div class="sig-name">Marcus Chen</div><div class="sig-role">Client</div></div><div class="sig-status sig-pending">⏳ Pending</div></div>
+          </div>
+          <div class="insight-blk">
+            <div class="ins-head">Audit trail</div>
+            <div class="ins-row"><div class="audit-time">Apr 7, 9:15</div><div>Proposal created by Sofia Adeyemi</div></div>
+            <div class="ins-row"><div class="audit-time">Apr 7, 11:42</div><div>Opened by Marcus Chen · IP 104.22.x.x</div></div>
+            <div class="ins-row"><div class="audit-time">Apr 7, 11:44</div><div>Signed by Sofia Adeyemi</div></div>
+            <div class="ins-row"><div class="audit-time">Apr 7, 11:46</div><div>Signature request sent to Marcus Chen</div></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="toast('Reminder sent to Marcus Chen')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Send signature reminder</button>
+        </div>
+        <!-- Invoice Panel -->
+        <div class="r-panel" id="rp-invoice">
+          <div class="inv-summary">
+            <div class="inv-title"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Invoice schedule</div>
+            <div class="inv-row"><span>Total contract value</span><strong>$9,850.60</strong></div>
+            <div class="inv-row"><span>Collected</span><strong style="color:var(--green)">$3,000.00</strong></div>
+            <div class="inv-row"><span>Outstanding</span><strong>$6,850.60</strong></div>
+            <div class="inv-milestone">
+              <div class="inv-ms-row"><span class="ms-label">Deposit (30%)</span><span class="ms-amt">$3,000</span><span class="ms-status ms-paid">Paid</span></div>
+              <div class="inv-ms-row"><span class="ms-label">Milestone 2 (Wk 5)</span><span class="ms-amt">$3,925</span><span class="ms-status ms-due">Due May 5</span></div>
+              <div class="inv-ms-row"><span class="ms-label">Final (Wk 10)</span><span class="ms-amt">$2,925.60</span><span class="ms-status ms-pending">Pending</span></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn" style="flex:1" onclick="toast('Invoice #INV-041 created')">Create invoice</button>
+            <button class="btn btn-green" style="flex:1" onclick="toast('Payment link sent to Marcus')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Request payment</button>
+          </div>
+          <div class="pp-blk">
+            <div class="pp-head">Auto-invoicing</div>
+            <div class="pp-row"><div class="pp-lbl">Auto-send on milestone</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">Payment via Stripe</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">Late payment reminder</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">Receipt auto-send</div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+        </div>
+        <!-- Pricing Panel -->
+        <div class="r-panel" id="rp-pricing">
+          <div class="pp-blk">
+            <div class="pp-head">Pricing settings</div>
+            <div class="pp-row"><div class="pp-lbl">Show tax (HST 13%)</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">Early-pay discount (5%)</div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">Optional add-ons visible</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">Client can pick package</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">Show per-item breakdown</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">Accept & pay button</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+          <div class="insight-blk">
+            <div class="ins-head"><span>Pricing packages</span><div class="card-action" onclick="toast('Package editor')">Edit</div></div>
+            <div class="ins-row"><div class="ins-dot" style="background:var(--ink-3)"></div><div><strong>Starter</strong> — Brand only · $3,800</div></div>
+            <div class="ins-row" style="background:var(--accent-light)"><div class="ins-dot" style="background:var(--accent)"></div><div><strong>Full package</strong> — Brand + Web · $8,720 <span class="tag tag-blue">Selected</span></div></div>
+            <div class="ins-row"><div class="ins-dot" style="background:var(--green)"></div><div><strong>Growth</strong> — Brand + Web + SEO · $10,500</div></div>
+          </div>
+        </div>
+        <!-- Send Panel -->
+        <div class="r-panel" id="rp-send">
+          <div class="send-card">
+            <div class="send-title">Deliver proposal</div>
+            <input class="send-input" placeholder="Client email" value="m.chen@voltagoods.co">
+            <input class="send-input" placeholder="Personal note (optional)…">
+            <div class="send-btns">
+              <button class="send-btn" onclick="toast('Link copied')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link</button>
+              <button class="send-btn" onclick="toast('PDF exported')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
+              <button class="send-btn" onclick="toast('DOCX exported')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>DOCX</button>
+              <button class="send-btn send-btn-accent" onclick="toast('✓ Sent to Marcus')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send</button>
+            </div>
+          </div>
+          <div class="pp-blk">
+            <div class="pp-head">Delivery settings</div>
+            <div class="pp-row"><div class="pp-lbl">Expiry date</div><input type="date" value="2026-05-07" style="font-size:11.5px;border:1px solid var(--border);border-radius:var(--r-sm);padding:3px 7px;font-family:var(--sans);background:var(--surface-2);color:var(--ink);outline:none"></div>
+            <div class="pp-row"><div class="pp-lbl">Require e-signature</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">Open notifications</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">Auto follow-up (3 days)</div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="pp-row"><div class="pp-lbl">WhatsApp delivery</div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+        </div>
+        <!-- Track Panel -->
+        <div class="r-panel" id="rp-track">
+          <div class="track-card">
+            <div class="track-head"><span>Client activity</span><div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green)"><div class="live-dot"></div>Live</div></div>
+            <div class="track-item"><div class="td-col"><div class="t-dot" style="background:var(--accent)"></div><div class="t-line"></div></div><div class="track-txt"><strong>Marcus</strong> opened the proposal<div class="track-time">Today, 11:42 AM · 4 min 18 sec</div><div class="t-bar"><div class="t-fill" style="width:72%"></div></div><div style="font-size:10.5px;color:var(--ink-3);margin-top:3px">Focused on Pricing section (2:14)</div></div></div>
+            <div class="track-item"><div class="td-col"><div class="t-dot" style="background:var(--green)"></div><div class="t-line"></div></div><div class="track-txt"><strong>Proposal delivered</strong> via email<div class="track-time">Today, 9:15 AM</div></div></div>
+            <div class="track-item"><div class="td-col"><div class="t-dot" style="background:var(--amber)"></div></div><div class="track-txt"><strong>Auto-saved</strong> draft<div class="track-time">Yesterday, 6:04 PM</div></div></div>
+          </div>
+          <div style="background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--r-lg);padding:13px">
+            <div style="font-size:12px;font-weight:500;color:var(--green);margin-bottom:4px">Engagement signal</div>
+            <div style="font-size:12px;color:#14532d;line-height:1.5">Marcus spent 4:18 on the proposal — above the 2:30 average. Pricing focus = price sensitivity. Suggested: call today and offer the early-pay discount.</div>
+          </div>
+          <button class="btn" style="width:100%" onclick="toast('Follow-up email scheduled for 2pm today')">Schedule follow-up email</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ CLIENT PORTAL ═══════ -->
+<div class="page" id="page-portal">
+  <div class="scroll-area" style="background:var(--canvas)">
+    <div style="max-width:720px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:12px;color:var(--ink-3);margin-bottom:4px">You received a proposal from</div>
+        <div style="font-family:var(--serif);font-size:20px">Sofia Adeyemi Studio</div>
+      </div>
+      <div class="portal-doc">
+        <div class="portal-header">
+          <div><div class="portal-brand">Brand Identity & Website — Full Package</div><div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:3px">Proposal #QK-0041 · Valid until May 7, 2026</div></div>
+          <div class="portal-status"><div class="portal-status-dot"></div>Active</div>
+        </div>
+        <div class="portal-body">
+          <div class="portal-section">
+            <div class="portal-section-title">Scope of work</div>
+            <div class="portal-text">We will design a complete brand identity for Volta Goods and translate it into a high-converting Shopify storefront optimised for your target customer. Engagement covers discovery, strategy, design, development, and a 2-week post-launch support window.</div>
+          </div>
+          <div class="portal-section">
+            <div class="portal-section-title">Your investment</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px" id="portal-pkgs">
+              <div class="portal-pkg" data-name="Starter" data-price="$3,800" style="border:1px solid var(--border);border-radius:var(--r-md);padding:12px;cursor:pointer;transition:all .15s" onclick="choosePkg(this)"><div style="font-size:11px;color:var(--ink-3)">Starter</div><div style="font-size:16px;font-weight:500;font-family:var(--mono)">$3,800</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">Brand only</div></div>
+              <div class="portal-pkg" data-name="Full Package" data-price="$9,850" style="border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--r-md);padding:12px;cursor:pointer" onclick="choosePkg(this)"><div style="font-size:10px;font-weight:500;color:var(--accent)">★ RECOMMENDED</div><div style="font-size:16px;font-weight:500;font-family:var(--mono);color:var(--accent)">$9,850</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">Brand + Web</div></div>
+              <div class="portal-pkg" data-name="Growth" data-price="$10,500" style="border:1px solid var(--border);border-radius:var(--r-md);padding:12px;cursor:pointer;transition:all .15s" onclick="choosePkg(this)"><div style="font-size:11px;color:var(--ink-3)">Growth</div><div style="font-size:16px;font-weight:500;font-family:var(--mono)">$10,500</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">Brand + Web + SEO</div></div>
+            </div>
+          </div>
+          <div class="portal-section">
+            <div class="portal-section-title">E-signature</div>
+            <div style="font-size:13px;color:var(--ink-2);margin-bottom:8px">By signing below you agree to the scope, timeline, and payment terms outlined in this proposal.</div>
+            <div class="sig-pad" id="sig-pad" onclick="signPortal()">Click to sign</div>
+          </div>
+          <div class="portal-section">
+            <div class="portal-section-title">Payment method</div>
+            <div class="pay-methods">
+              <div class="pay-method" onclick="selectPay(this)"><div class="pay-icon">💳</div>Credit card</div>
+              <div class="pay-method" onclick="selectPay(this)"><div class="pay-icon">🏦</div>Bank transfer</div>
+              <div class="pay-method" onclick="selectPay(this)"><div class="pay-icon">📱</div>Mobile money</div>
+            </div>
+          </div>
+          <div class="portal-section">
+            <div class="cta-row">
+              <button class="cta-accept" onclick="portalAccept()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>Accept & pay deposit ($3,000)</button>
+            </div>
+            <div class="cta-row" style="margin-top:0">
+              <button class="cta-comment" onclick="toggleComment()"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Request changes</button>
+              <button class="cta-decline" onclick="toast('Decline recorded. Sofia has been notified.')">Decline</button>
+            </div>
+            <div class="comment-box" id="comment-box">
+              <textarea placeholder="Describe the changes you'd like…"></textarea>
+              <button class="btn btn-primary" style="width:100%;margin-top:6px;justify-content:center" onclick="toast('Changes requested. Sofia will respond within 24 hours.')">Send request</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ PROJECTS + TIME TRACKING ═══════ -->
+<div class="page" id="page-projects">
+  <div class="scroll-area">
+    <div class="page-header"><div class="page-title">Projects & time tracking</div><button class="btn btn-primary" onclick="toast('New project created')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New project</button></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Active projects</div><div class="stat-val">5</div><div class="stat-delta up">2 on track</div></div>
+      <div class="stat-card"><div class="stat-label">Hours this week</div><div class="stat-val">38.5h</div><div class="stat-delta up">↑ 4h vs last wk</div></div>
+      <div class="stat-card"><div class="stat-label">Billable amount</div><div class="stat-val">$6,160</div><div class="stat-delta up">@$160/hr avg</div></div>
+      <div class="stat-card"><div class="stat-label">Invoices pending</div><div class="stat-val">$13.8k</div><div class="stat-delta dn">2 overdue</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="project-card">
+        <div class="proj-head"><div><div class="proj-title">Volta Goods — Brand + Web</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">Marcus Chen · Due Jun 10</div></div><span class="tag tag-blue">Active</span></div>
+        <div class="proj-progress"><div class="proj-fill" style="width:35%"></div></div>
+        <div style="padding:4px 16px 8px;font-size:11.5px;color:var(--ink-3)">35% complete · Wk 3 of 10</div>
+        <div class="task-row"><div class="task-chk done"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="task-name done">Brand discovery workshop</div><div class="task-time">3h</div><div class="task-assignee" style="background:var(--accent-light);color:var(--accent)">SA</div></div>
+        <div class="task-row"><div class="task-chk done"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="task-name done">Logo concepts (3 directions)</div><div class="task-time">6h</div><div class="task-assignee" style="background:var(--accent-light);color:var(--accent)">SA</div></div>
+        <div class="task-row"><div class="task-chk" onclick="checkTask(this)"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="task-name">Logo refinement + client review</div><div class="task-time">4h est</div><div class="task-assignee" style="background:var(--accent-light);color:var(--accent)">SA</div></div>
+        <div class="task-row"><div class="task-chk" onclick="checkTask(this)"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="task-name">Shopify theme design</div><div class="task-time">12h est</div><div class="task-assignee" style="background:var(--accent-light);color:var(--accent)">SA</div></div>
+      </div>
+      <div class="project-card">
+        <div class="proj-head"><div><div class="proj-title">Opal Events — Retainer</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">Aisha Ndiaye · Monthly</div></div><span class="tag tag-green">On track</span></div>
+        <div class="proj-progress"><div class="proj-fill" style="width:70%;background:var(--green)"></div></div>
+        <div style="padding:4px 16px 8px;font-size:11.5px;color:var(--ink-3)">70% of April hours used · 6h remaining</div>
+        <div class="task-row"><div class="task-chk done"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="task-name done">Monthly strategy call</div><div class="task-time">1h</div><div class="task-assignee" style="background:var(--green-light);color:var(--green)">SA</div></div>
+        <div class="task-row"><div class="task-chk done"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="task-name done">Social media content (Apr)</div><div class="task-time">8h</div><div class="task-assignee" style="background:var(--green-light);color:var(--green)">SA</div></div>
+        <div class="task-row"><div class="task-chk" onclick="checkTask(this)"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="task-name">Email newsletter design</div><div class="task-time">3h est</div><div class="task-assignee" style="background:var(--green-light);color:var(--green)">SA</div></div>
+        <div class="task-row"><div class="task-chk" onclick="checkTask(this)"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="task-name">Analytics report</div><div class="task-time">3h est</div><div class="task-assignee" style="background:var(--green-light);color:var(--green)">SA</div></div>
+      </div>
+    </div>
+    <!-- Time Log -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><div class="card-title">Time log</div><button class="btn" onclick="toast('Timer started')"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Start timer</button></div>
+      <div class="time-log">
+        <div class="tl-item"><div class="tl-icon" style="background:var(--accent-light)"><svg fill="none" stroke="var(--accent)" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><div class="tl-name">Logo refinement — Volta Goods</div><div style="font-size:11px;color:var(--ink-3);margin-right:10px">Today, 9:00–11:30</div><div class="tl-dur">2h 30m</div><div class="tl-billing" style="margin-left:8px">$400</div></div>
+        <div class="tl-item"><div class="tl-icon" style="background:var(--green-light)"><svg fill="none" stroke="var(--green)" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div class="tl-name">Client call — Opal Events</div><div style="font-size:11px;color:var(--ink-3);margin-right:10px">Yesterday, 2:00–3:00</div><div class="tl-dur">1h 00m</div><div class="tl-billing" style="margin-left:8px">$160</div></div>
+        <div class="tl-item"><div class="tl-icon" style="background:var(--amber-light)"><svg fill="none" stroke="var(--amber)" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="10" height="11" rx="1"/></svg></div><div class="tl-name">Proposal writing — Meridian</div><div style="font-size:11px;color:var(--ink-3);margin-right:10px">Apr 6, 4:00–6:00</div><div class="tl-dur">2h 00m</div><div class="tl-billing" style="margin-left:8px;color:var(--ink-3)">Non-billable</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ CLIENTS ═══════ -->
+<div class="page" id="page-clients">
+  <div class="scroll-area">
+    <div class="page-header"><div class="page-title">Clients</div><button class="btn btn-primary" onclick="toast('New client form')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add client</button></div>
+    <!-- CRM Pipeline -->
+    <div class="section-title">Sales pipeline</div>
+    <div class="crm-pipeline" id="crm-pipeline"></div>
+    <div class="section-title">All clients</div>
+    <div class="client-grid" id="client-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════ TEMPLATES ═══════ -->
+<div class="page" id="page-templates">
+  <div class="scroll-area">
+    <div class="page-header"><div class="page-title">Templates</div><button class="btn btn-primary" onclick="toast('Template editor')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create template</button></div>
+    <div class="tmpl-grid" id="tmpl-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════ ANALYTICS ═══════ -->
+<div class="page" id="page-analytics">
+  <div class="scroll-area">
+    <div class="page-header"><div class="page-title">Analytics</div><div style="display:flex;gap:6px"><button class="btn">This month</button><button class="btn">90 days</button><button class="btn">This year</button></div></div>
+    <div class="stats-grid"><div class="stat-card"><div class="stat-label">Proposals sent</div><div class="stat-val">47</div><div class="stat-delta up">↑ 8 vs prior</div></div><div class="stat-card"><div class="stat-label">Avg. time to accept</div><div class="stat-val">2.4d</div><div class="stat-delta up">↓ 0.8 days faster</div></div><div class="stat-card"><div class="stat-label">Avg. deal value</div><div class="stat-val">$6.2k</div><div class="stat-delta up">↑ $820</div></div><div class="stat-card"><div class="stat-label">Revenue pipeline</div><div class="stat-val">$94k</div><div class="stat-delta up">↑ $18k new</div></div></div>
+    <div class="an-grid" id="an-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════ INBOX ═══════ -->
+<div class="page" id="page-inbox">
+  <div class="scroll-area" style="padding:0">
+    <div style="padding:20px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between"><div class="page-title" style="font-size:20px">Inbox</div><button class="btn" onclick="toast('All marked as read')">Mark all read</button></div>
+    <div class="inbox-list" id="inbox-list"></div>
+  </div>
+</div>
+
+<!-- ═══════ SETTINGS ═══════ -->
+<div class="page" id="page-settings">
+  <div class="scroll-area">
+    <div class="page-header"><div class="page-title">Settings</div><button class="btn btn-primary" onclick="toast('Changes saved')">Save changes</button></div>
+    <div class="settings-grid">
+      <div class="settings-nav" id="sn"></div>
+      <div class="settings-panel" id="settings-content"></div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+<div class="toast" id="toast-el"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span id="toast-msg"></span></div>
+
+<script>
+/* ── Data ── */
+const proposals=[
+  {n:'Brand Identity & Website',c:'Volta Goods',cc:'VG',bg:'#dbeafe',tc:'#1d4ed8',amt:'$9,850',s:'viewed',d:'Apr 7'},
+  {n:'Marketing Retainer Q2',c:'Opal Events',cc:'OE',bg:'#fef3c7',tc:'#92400e',amt:'$4,500',s:'sent',d:'Apr 5'},
+  {n:'SEO & Content Strategy',c:'Clearwater Capital',cc:'CC',bg:'#d1fae5',tc:'#065f46',amt:'$3,750',s:'accepted',d:'Apr 3'},
+  {n:'Development Sprint',c:'Finova Labs',cc:'FL',bg:'#ede9fe',tc:'#4c1d95',amt:'$8,000',s:'signed',d:'Apr 1'},
+  {n:'Brand Refresh',c:'Meridian Studio',cc:'MS',bg:'#fce7f3',tc:'#831843',amt:'$6,400',s:'invoiced',d:'Mar 28'},
+];
+const clients=[
+  {n:'Marcus Chen',co:'Volta Goods',code:'VG',bg:'#dbeafe',tc:'#1d4ed8',props:4,val:'$22.8k',rate:'75%'},
+  {n:'Priya Sharma',co:'Meridian Studio',code:'MS',bg:'#fce7f3',tc:'#831843',props:6,val:'$18.2k',rate:'83%'},
+  {n:'James Okafor',co:'Clearwater Capital',code:'CC',bg:'#d1fae5',tc:'#065f46',props:3,val:'$12.0k',rate:'100%'},
+  {n:'Aisha Ndiaye',co:'Opal Events',code:'OE',bg:'#fef3c7',tc:'#92400e',props:2,val:'$9.0k',rate:'50%'},
+  {n:'Tom Park',co:'Finova Labs',code:'FL',bg:'#ede9fe',tc:'#4c1d95',props:2,val:'$14.0k',rate:'50%'},
+  {n:'Sara Voss',co:'Nova Health',code:'NH',bg:'#dcfce7',tc:'#166534',props:1,val:'$3.2k',rate:'0%'},
+];
+const templates=[
+  {n:'Web design proposal',d:'Full-stack website with timeline.',cat:'Design',uses:248,rate:'62%',a:'#dbeafe',b:'#bfdbfe',c:'#93c5fd'},
+  {n:'Brand identity',d:'Logo, guidelines, visual system.',cat:'Branding',uses:184,rate:'71%',a:'#fce7f3',b:'#fbcfe8',c:'#f9a8d4'},
+  {n:'Consulting retainer',d:'Monthly retainer with deliverables.',cat:'Consulting',uses:120,rate:'58%',a:'#d1fae5',b:'#a7f3d0',c:'#6ee7b7'},
+  {n:'Development sprint',d:'Agile sprint with estimates.',cat:'Dev',uses:96,rate:'54%',a:'#ede9fe',b:'#ddd6fe',c:'#c4b5fd'},
+  {n:'Marketing campaign',d:'Campaign brief and KPIs.',cat:'Marketing',uses:73,rate:'49%',a:'#fef3c7',b:'#fde68a',c:'#fcd34d'},
+  {n:'General services',d:'Flexible blank template.',cat:'General',uses:311,rate:'44%',a:'#f1efe8',b:'#e5e7eb',c:'#d1d5db'},
+];
+const months=['Nov','Dec','Jan','Feb','Mar','Apr'];
+const revs=[18200,14800,22600,19400,31200,28400];
+const pipeline=[
+  {stage:'Lead',count:12,color:'#bfdbfe'},{stage:'Proposal',count:8,color:'#93c5fd'},
+  {stage:'Negotiation',count:5,color:'#60a5fa'},{stage:'Closed',count:3,color:'#1d4ed8'},
+];
+const inbox=[
+  {n:'Marcus Chen',code:'VG',bg:'#dbeafe',tc:'#1d4ed8',msg:'Thanks for the proposal — a few questions about the timeline…',time:'2m ago',unread:true},
+  {n:'Aisha Ndiaye',code:'OE',bg:'#fef3c7',tc:'#92400e',msg:'Invoice received. Processing payment now.',time:'1h ago',unread:true},
+  {n:'QuoteKit AI',code:'AI',bg:'#ede9fe',tc:'#4c1d95',msg:'Your Volta Goods proposal was opened. Marcus spent 4:18 on Pricing.',time:'2h ago',unread:true},
+  {n:'James Okafor',code:'CC',bg:'#d1fae5',tc:'#065f46',msg:'All good — please send the final invoice when ready.',time:'Yesterday',unread:false},
+  {n:'Meridian Studio',code:'MS',bg:'#fce7f3',tc:'#831843',msg:'Proposal accepted! Ready to kick off next week.',time:'Apr 6',unread:false},
+];
+
+/* ── Render ── */
+function render(){
+  // Dashboard proposals
+  const dp=document.getElementById('dash-proposals');
+  if(dp) dp.innerHTML=proposals.map(p=>`<div class="pli" onclick="go('builder')"><div class="pli-icon" style="background:${p.bg}"><svg width="15" height="15" fill="none" stroke="${p.tc}" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 12h6M9 16h4M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg></div><div style="flex:1;min-width:0"><div class="pli-name">${p.n}</div><div class="pli-sub">${p.c} · ${p.d}</div></div><div style="text-align:right;flex-shrink:0"><div class="pli-amt">${p.amt}</div><div style="margin-top:3px"><span class="status-badge b-${p.s}">${p.s.charAt(0).toUpperCase()+p.s.slice(1)}</span></div></div></div>`).join('');
+
+  // Dashboard pipeline
+  const dpl=document.getElementById('dash-pipeline');
+  if(dpl) dpl.innerHTML=pipeline.map(p=>`<div class="pipeline-row"><div class="pipe-stage">${p.stage}</div><div class="pipe-bar-wrap"><div class="pipe-fill" style="width:${Math.round((p.count/12)*100)}%;background:${p.color}"></div></div><div class="pipe-count">${p.count}</div></div>`).join('');
+
+  // Activity
+  const acts=[
+    {code:'VG',bg:'#dbeafe',tc:'#1d4ed8',t:'<strong>Marcus Chen</strong> opened the Volta Goods proposal',time:'2 min ago'},
+    {code:'MS',bg:'#fce7f3',tc:'#831843',t:'<strong>Meridian Studio</strong> accepted Brand Refresh',time:'1h ago'},
+    {code:'OE',bg:'#fef3c7',tc:'#92400e',t:'<strong>Opal Events</strong> viewed retainer proposal 3×',time:'3h ago'},
+    {code:'CC',bg:'#d1fae5',tc:'#065f46',t:'<strong>Clearwater</strong> downloaded SEO proposal PDF',time:'Yesterday'},
+  ];
+  const da=document.getElementById('dash-activity');
+  if(da) da.innerHTML=acts.map(a=>`<div class="act-item"><div class="act-av" style="background:${a.bg};color:${a.tc}">${a.code}</div><div><div class="act-text">${a.t}</div><div class="act-time">${a.time}</div></div></div>`).join('');
+
+  // Revenue chart
+  const dc=document.getElementById('dash-chart');
+  const mx=Math.max(...revs);
+  if(dc) dc.innerHTML=months.map((m,i)=>`<div class="cb-col"><div style="font-size:10px;color:var(--ink-3)">$${(revs[i]/1000).toFixed(0)}k</div><div class="cb-bar" style="height:${Math.round((revs[i]/mx)*72)}px;background:${i===5?'var(--accent)':'var(--accent-mid)'}"></div><div class="cb-label">${m}</div></div>`).join('');
+
+  // Invoices due
+  const di=document.getElementById('dash-invoices');
+  const invs=[{c:'Opal Events',cc:'OE',bg:'#fef3c7',tc:'#92400e',n:'Retainer #INV-038',amt:'$4,500',due:'Due today',urgent:true},{c:'Clearwater Capital',cc:'CC',bg:'#d1fae5',tc:'#065f46',n:'SEO Invoice #INV-036',amt:'$3,750',due:'Due Apr 14',urgent:false},{c:'Volta Goods',cc:'VG',bg:'#dbeafe',tc:'#1d4ed8',n:'Deposit #INV-040',amt:'$3,000',due:'Paid Apr 3',urgent:false}];
+  if(di) di.innerHTML=invs.map(i=>`<div class="pli" onclick="toast('Opening invoice ${i.n}')"><div class="pli-icon" style="background:${i.bg}"><svg width="15" height="15" fill="none" stroke="${i.tc}" stroke-width="1.8" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div style="flex:1;min-width:0"><div class="pli-name">${i.n}</div><div class="pli-sub">${i.c}</div></div><div style="text-align:right;flex-shrink:0"><div class="pli-amt">${i.amt}</div><div style="margin-top:3px;font-size:11.5px;color:${i.urgent?'var(--red)':'var(--ink-3)'}">${i.due}</div></div></div>`).join('');
+
+  // Clients
+  const cg=document.getElementById('client-grid');
+  if(cg) cg.innerHTML=clients.map(c=>`<div class="cc" onclick="toast('Opened ${c.n}')"><div class="cc-top"><div class="cc-av" style="background:${c.bg};color:${c.tc}">${c.code}</div><div><div class="cc-name">${c.n}</div><div class="cc-co">${c.co}</div></div></div><div class="cc-stats"><div class="cc-stat"><div class="cc-sv">${c.props}</div><div class="cc-sl">Proposals</div></div><div class="cc-stat"><div class="cc-sv">${c.val}</div><div class="cc-sl">Value</div></div><div class="cc-stat"><div class="cc-sv">${c.rate}</div><div class="cc-sl">Win rate</div></div></div></div>`).join('');
+
+  // CRM pipeline
+  const cp=document.getElementById('crm-pipeline');
+  const pipeData=[
+    {stage:'Leads',color:'var(--ink-3)',cards:[{n:'Nova Health',v:'$3.2k'},{n:'Studio Zero',v:'$5.1k'}]},
+    {stage:'Proposal sent',color:'var(--amber)',cards:[{n:'Opal Events',v:'$4.5k'},{n:'Volta Goods',v:'$9.8k'},{n:'Finova Labs',v:'$8.0k'}]},
+    {stage:'Negotiating',color:'var(--accent)',cards:[{n:'Meridian Studio',v:'$6.4k'}]},
+    {stage:'Closed won',color:'var(--green)',cards:[{n:'Clearwater Cap.',v:'$3.75k'},{n:'Spark Agency',v:'$12.0k'}]},
+  ];
+  if(cp) cp.innerHTML=pipeData.map(p=>`<div class="pipe-col"><div class="pipe-col-head"><span style="color:${p.color}">${p.stage}</span><span style="font-size:11px;color:var(--ink-3)">${p.cards.length}</span></div>${p.cards.map(c=>`<div class="pipe-card" onclick="toast('Opening ${c.n}')"><div class="pipe-card-name">${c.n}</div><div class="pipe-card-val">${c.v}</div></div>`).join('')}</div>`).join('');
+
+  // Templates
+  const tg=document.getElementById('tmpl-grid');
+  if(tg) tg.innerHTML=templates.map(t=>`<div class="tc" onclick="toast('Using ${t.n}')"><div class="tc-prev" style="background:${t.a}"><div class="tc-bar" style="height:8px;width:45%;background:${t.c}"></div><div class="tc-bar" style="height:5px;width:70%;background:${t.b}"></div><div class="tc-bar" style="height:5px;width:55%;background:${t.b}"></div><div style="flex:1"></div><div class="tc-bar" style="height:4px;width:80%;background:${t.b}"></div><div class="tc-badge" style="background:${t.c};color:var(--ink)">${t.cat}</div></div><div class="tc-body"><div class="tc-name">${t.n}</div><div class="tc-desc">${t.d}</div><div class="tc-meta"><span>${t.uses} uses</span><span style="color:var(--green);font-weight:500">${t.rate}</span></div></div></div>`).join('');
+
+  // Analytics
+  const ag=document.getElementById('an-grid');
+  if(ag) ag.innerHTML=`
+    <div class="an-card"><div class="an-title">Proposal funnel</div><div class="an-sub">Progression through stages</div>${[{l:'Sent',n:47,c:'#378ADD'},{l:'Opened',n:37,c:'#4A9EFF'},{l:'Viewed 2+',n:28,c:'#1D9E75'},{l:'Signed',n:21,c:'#7c3aed'},{l:'Invoiced',n:19,c:'#16a34a'}].map(s=>`<div class="funnel-row"><div class="f-label">${s.l}</div><div class="f-wrap"><div class="f-fill" style="width:${Math.round((s.n/47)*100)}%;background:${s.c}">${s.n}</div></div><div class="f-count">${s.n}</div></div>`).join('')}</div>
+    <div class="an-card"><div class="an-title">Template performance</div><div class="an-sub">Conversion rates per type</div>${[{t:'Branding',r:'71%',v:'$5.2k'},{t:'Web design',r:'62%',v:'$8.4k'},{t:'Consulting',r:'58%',v:'$4.8k'},{t:'Development',r:'54%',v:'$9.1k'},{t:'Marketing',r:'49%',v:'$3.6k'}].map(r=>`<div class="perf-row"><div>${r.t}</div><div style="display:flex;gap:14px"><span style="color:var(--green);font-family:var(--mono)">${r.r}</span><span style="font-family:var(--mono)">${r.v}</span></div></div>`).join('')}</div>
+    <div class="an-card"><div class="an-title">Section engagement</div><div class="an-sub">Avg. time per section</div>${[{l:'Pricing',v:78},{l:'Scope',v:61},{l:'Timeline',v:44},{l:'About us',v:38},{l:'Cover',v:22}].map(i=>`<div class="funnel-row"><div class="f-label">${i.l}</div><div class="f-wrap"><div class="f-fill" style="width:${i.v}%;background:var(--purple)">${i.v}%</div></div></div>`).join('')}</div>
+    <div class="an-card"><div class="an-title">Revenue trend</div><div class="an-sub">Monthly closed revenue</div><div style="display:flex;align-items:flex-end;gap:7px;height:120px;margin-top:8px">${months.map((m,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="font-size:9.5px;color:var(--ink-3)">$${(revs[i]/1000).toFixed(0)}k</div><div style="width:100%;border-radius:3px 3px 0 0;height:${Math.round((revs[i]/Math.max(...revs))*90)}px;background:${i===5?'var(--accent)':'var(--accent-mid)'}"></div><div style="font-size:10px;color:var(--ink-3)">${m}</div></div>`).join('')}</div></div>`;
+
+  // Inbox
+  const il=document.getElementById('inbox-list');
+  if(il) il.innerHTML=inbox.map(i=>`<div class="inbox-item ${i.unread?'unread':''}" onclick="toast('Opening message from ${i.n}')"><div class="inbox-av" style="background:${i.bg};color:${i.tc}">${i.code}</div><div class="inbox-body"><div class="inbox-name">${i.n}</div><div class="inbox-preview">${i.msg}</div></div><div class="inbox-time">${i.time}</div></div>`).join('');
+
+  // Settings
+  renderSettings();
+}
+
+function renderSettings(){
+  const snEl=document.getElementById('sn');
+  const scEl=document.getElementById('settings-content');
+  const sections=['Company profile','Brand & design','Notifications','Billing & plan','Integrations','Team','Security'];
+  if(snEl) snEl.innerHTML=sections.map((s,i)=>`<div class="sn-item ${i===0?'active':''}" onclick="setSettingSection(this,'${s}')">${s}</div>`).join('');
+  if(scEl) scEl.innerHTML=`
+    <div class="settings-section">
+      <div class="settings-section-title">Company profile</div>
+      <div class="settings-row"><div><div class="settings-label">Company name</div></div><input class="settings-input" value="Sofia Adeyemi Studio"></div>
+      <div class="settings-row"><div><div class="settings-label">Business email</div></div><input class="settings-input" value="sofia@studiosa.co"></div>
+      <div class="settings-row"><div><div class="settings-label">Website</div></div><input class="settings-input" value="studiosa.co"></div>
+      <div class="settings-row"><div><div class="settings-label">Business address</div></div><input class="settings-input" value="Toronto, ON, Canada"></div>
+      <div class="settings-row"><div><div class="settings-label">Tax number (HST)</div></div><input class="settings-input" value="RT-2024-88122"></div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">Brand & design</div>
+      <div class="settings-row"><div><div class="settings-label">Logo</div><div class="settings-sub">Appears on all proposals</div></div><div class="brand-preview" onclick="toast('Upload logo')">Upload logo</div></div>
+      <div class="settings-row"><div><div class="settings-label">Brand colour</div></div><div style="display:flex;gap:7px">${['#1d4ed8','#7c3aed','#16a34a','#b45309','#dc2626','#18181b'].map((c,i)=>`<div class="color-swatch ${i===0?'active':''}" style="background:${c}" onclick="toast('Brand colour set to ${c}')"></div>`).join('')}</div></div>
+      <div class="settings-row"><div><div class="settings-label">Font style</div></div><select class="settings-input" style="width:auto"><option>DM Sans (current)</option><option>Instrument Serif</option><option>JetBrains Mono</option></select></div>
+      <div class="settings-row"><div><div class="settings-label">Proposal footer text</div></div><input class="settings-input" value="Thank you for your business."></div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">Notifications</div>
+      ${[['Proposal opened','Notify when client views proposal'],['Proposal accepted','Notify on acceptance'],['Invoice paid','Notify on payment received'],['Follow-up reminders','3-day auto follow-up'],['Weekly report','Sunday summary email']].map(([l,s])=>`<div class="settings-row"><div><div class="settings-label">${l}</div><div class="settings-sub">${s}</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>`).join('')}
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">Integrations</div>
+      ${[{n:'Stripe',d:'Accept card payments',c:'#635bff',st:'Connected'},
+         {n:'Zapier',d:'Workflow automation',c:'#FF4A00',st:'Connect'},
+         {n:'HubSpot',d:'CRM sync',c:'#ff7a59',st:'Connect'},
+         {n:'Slack',d:'Team notifications',c:'#4A154B',st:'Connected'},
+         {n:'Google Calendar',d:'Scheduling',c:'#4285F4',st:'Connect'}].map(i=>`<div class="settings-row"><div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:6px;background:${i.c};display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:500;flex-shrink:0">${i.n[0]}</div><div><div class="settings-label">${i.n}</div><div class="settings-sub">${i.d}</div></div></div><button class="btn ${i.st==='Connected'?'btn-green':''}" onclick="toast('${i.n} ${i.st==='Connect'?'connected':'disconnected'}')">${i.st}</button></div>`).join('')}
+    </div>`;
+}
+
+function setSettingSection(el,s){
+  document.querySelectorAll('.sn-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  toast(`Viewing ${s} settings`);
+}
+
+/* ── Navigation ── */
+function go(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tb-ni').forEach(i=>i.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('page-'+page)?.classList.add('active');
+  const navMap={dashboard:0,builder:1,clients:2,portal:3,projects:4,templates:5,analytics:6,inbox:7,settings:8};
+  document.querySelectorAll('.tb-ni')[navMap[page]]?.classList.add('active');
+  const sbMap={dashboard:0,builder:1,clients:2,portal:3,projects:4,templates:5,analytics:6,inbox:7};
+  document.querySelectorAll('.sb-item')[sbMap[page]]?.classList.add('active');
+}
+
+/* ── Builder tabs ── */
+function rTab(el,panel){
+  document.querySelectorAll('.r-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.r-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('rp-'+panel)?.classList.add('active');
+}
+
+/* ── Actions ── */
+function addItem(){
+  const tb=document.getElementById('ptbl-body');
+  if(!tb)return;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><div class="iname">New service</div><div class="idesc">Add description</div></td><td>1</td><td>$0</td><td>—</td><td style="font-family:var(--mono);font-weight:500">$0</td>`;
+  tb.appendChild(tr);
+  toast('Line item added');
+}
+function selectPkg(el,name){
+  document.querySelectorAll('[onclick*="selectPkg"]').forEach(e=>{e.style.background='';e.style.border='1px solid var(--border)';e.style.borderTop='1px solid var(--border)'});
+  el.style.background='var(--accent-light)';el.style.border='1px solid var(--accent)';el.style.borderTop='2px solid var(--accent)';
+  toast(`Selected: ${name} package`);
+}
+function checkTask(el){
+  el.classList.toggle('done');
+  const name=el.nextElementSibling;
+  if(name) name.classList.toggle('done');
+  el.querySelector('svg').style.display=el.classList.contains('done')?'block':'none';
+  toast(el.classList.contains('done')?'Task completed':'Task reopened');
+}
+function signPortal(){
+  const pad=document.getElementById('sig-pad');
+  if(pad){pad.innerHTML='<em style="font-size:22px;color:var(--ink)">Marcus Chen</em>';pad.style.background='var(--green-light)';pad.style.borderColor='var(--green)';pad.onclick=null;}
+  toast('Signed successfully');
+}
+function choosePkg(el){
+  document.querySelectorAll('.portal-pkg').forEach(p=>{p.style.border='1px solid var(--border)';p.style.background='';});
+  el.style.border='2px solid var(--accent)';el.style.background='var(--accent-light)';
+  toast('Selected: '+el.dataset.name+' — '+el.dataset.price);
+}
+function selectPay(el){
+  document.querySelectorAll('.pay-method').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+  toast('Payment method selected');
+}
+function portalAccept(){
+  toast('✓ Proposal accepted! Deposit payment processing via Stripe…');
+  setTimeout(()=>toast('✓ $3,000 deposit received. Project started!'),1800);
+}
+function toggleComment(){
+  const cb=document.getElementById('comment-box');
+  if(cb) cb.style.display=cb.style.display==='block'?'none':'block';
+}
+
+/* ── Toast ── */
+let toastTimer;
+function toast(msg){
+  const el=document.getElementById('toast-el');
+  const tx=document.getElementById('toast-msg');
+  if(!el||!tx)return;
+  tx.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2600);
+}
+
+render();
+</script>
+</body>
+</html>
