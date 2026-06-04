@@ -99,8 +99,8 @@ export const PLANS: Plan[] = [
     priceUSD: 36,
     billingInterval: 'month',
     trialDays: 14,
-    stripePriceIdCAD: process.env.VITE_STRIPE_PRICE_PRO_CAD ?? null,
-    stripePriceIdUSD: process.env.VITE_STRIPE_PRICE_PRO_USD ?? null,
+    stripePriceIdCAD: import.meta.env.VITE_STRIPE_PRICE_PRO_CAD ?? null,
+    stripePriceIdUSD: import.meta.env.VITE_STRIPE_PRICE_PRO_USD ?? null,
     popular: true,
     limits: {
       proposals: 'unlimited',
@@ -149,8 +149,8 @@ export const PLANS: Plan[] = [
     priceUSD: 73,
     billingInterval: 'month',
     trialDays: 14,
-    stripePriceIdCAD: process.env.VITE_STRIPE_PRICE_BUSINESS_CAD ?? null,
-    stripePriceIdUSD: process.env.VITE_STRIPE_PRICE_BUSINESS_USD ?? null,
+    stripePriceIdCAD: import.meta.env.VITE_STRIPE_PRICE_BUSINESS_CAD ?? null,
+    stripePriceIdUSD: import.meta.env.VITE_STRIPE_PRICE_BUSINESS_USD ?? null,
     popular: false,
     limits: {
       proposals: 'unlimited',
