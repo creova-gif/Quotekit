@@ -9,7 +9,7 @@ export default function Landing({ onEnterApp }: { onEnterApp: () => void }) {
               <path d="M2 3h8l3 4.5-3 4.5H2l3-4.5z"/>
             </svg>
           </div>
-          <span className="text-[17px] font-bold text-[#0d0d0d] tracking-[-0.3px]" style={{ fontFamily: 'Syne, sans-serif' }}>QuoteKit</span>
+          <span className="text-[17px] font-bold text-[#0d0d0d] tracking-[-0.3px]" style={{ fontFamily: 'var(--qk-serif)' }}>QuoteKit</span>
         </div>
         <div className="flex items-center gap-[2px] ml-10">
           {['Features', 'Pricing', 'Customers', 'Docs'].map(link => (
@@ -39,7 +39,7 @@ export default function Landing({ onEnterApp }: { onEnterApp: () => void }) {
           Now powered by Claude AI + RAG
         </div>
 
-        <h1 className="text-[clamp(48px,6.5vw,88px)] font-extrabold leading-[1.0] tracking-[-3px] text-center max-w-[820px] mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
+        <h1 className="text-[clamp(48px,6.5vw,88px)] font-extrabold leading-[1.0] tracking-[-3px] text-center max-w-[820px] mb-6" style={{ fontFamily: 'var(--qk-serif)' }}>
           Close deals <em className="not-italic text-[#e85d26] relative">faster</em> with AI-powered proposals
         </h1>
 
@@ -51,7 +51,7 @@ export default function Landing({ onEnterApp }: { onEnterApp: () => void }) {
           <button
             onClick={onEnterApp}
             className="inline-flex items-center gap-2 px-7 py-[14px] bg-[#0d0d0d] text-[#f5f3ee] rounded-[10px] text-[15px] font-semibold tracking-[-0.2px] hover:bg-[#e85d26] transition-all"
-            style={{ fontFamily: 'Syne, sans-serif' }}
+            style={{ fontFamily: 'var(--qk-serif)' }}
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -83,7 +83,7 @@ export default function Landing({ onEnterApp }: { onEnterApp: () => void }) {
             <div className="grid grid-cols-[200px_1fr_260px] h-[480px] overflow-hidden">
               {/* Sidebar */}
               <div className="bg-[#18181b] px-4 pt-4 flex flex-col">
-                <div className="pb-[14px] text-[14px] font-bold text-white flex items-center gap-2 border-b mb-2" style={{ fontFamily: 'Syne, sans-serif', borderColor: 'rgba(255,255,255,0.08)' }}>
+                <div className="pb-[14px] text-[14px] font-bold text-white flex items-center gap-2 border-b mb-2" style={{ fontFamily: 'var(--qk-serif)', borderColor: 'rgba(255,255,255,0.08)' }}>
                   <div className="w-[22px] h-[22px] bg-[#e85d26] rounded-[5px] flex items-center justify-center">
                     <svg width="11" height="11" fill="#fff" viewBox="0 0 16 16">
                       <path d="M2 3h8l3 4.5-3 4.5H2l3-4.5z"/>
@@ -111,11 +111,11 @@ export default function Landing({ onEnterApp }: { onEnterApp: () => void }) {
                 <div className="h-[calc(100%-38px)] overflow-hidden bg-[#f5f3ee] p-4">
                   <div className="bg-white rounded-[10px] border h-full overflow-hidden" style={{ borderColor: '#e5e7eb' }}>
                     <div className="bg-[#18181b] px-7 py-5 flex justify-between items-center">
-                      <div className="text-[13px] text-white font-semibold" style={{ fontFamily: 'Syne, sans-serif' }}>Sofia Adeyemi Studio</div>
+                      <div className="text-[13px] text-white font-semibold" style={{ fontFamily: 'var(--qk-serif)' }}>Sofia Adeyemi Studio</div>
                       <div className="text-[10px] text-white/45">#QK-0041</div>
                     </div>
                     <div className="px-7 py-[18px]">
-                      <div className="text-[16px] font-bold text-[#18181b] mb-[3px] tracking-[-0.3px]" style={{ fontFamily: 'Syne, sans-serif' }}>Brand Identity & Website</div>
+                      <div className="text-[16px] font-bold text-[#18181b] mb-[3px] tracking-[-0.3px]" style={{ fontFamily: 'var(--qk-serif)' }}>Brand Identity & Website</div>
                       <div className="text-[11px] text-[#8a8a8a] mb-[14px]">Prepared for Volta Goods</div>
                       {[
                         { name: 'Brand identity design', val: '$3,800' },
@@ -179,7 +179,7 @@ export default function Landing({ onEnterApp }: { onEnterApp: () => void }) {
           { num: '3.2x', desc: 'Faster close time' },
         ].map((stat, i) => (
           <div key={i} className={`text-center flex-1 max-w-[200px] px-8 ${i < 3 ? 'border-r' : ''}`} style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-            <div className="text-[36px] font-extrabold text-white tracking-[-1.5px]" style={{ fontFamily: 'Syne, sans-serif' }}>
+            <div className="text-[36px] font-extrabold text-white tracking-[-1.5px]" style={{ fontFamily: 'var(--qk-serif)' }}>
               {stat.num}
             </div>
             <div className="text-[13px] text-white/50 mt-[2px]">{stat.desc}</div>
@@ -191,7 +191,7 @@ export default function Landing({ onEnterApp }: { onEnterApp: () => void }) {
       <div className="px-12 py-[88px]">
         <div className="max-w-[1160px] mx-auto">
           <div className="text-[12px] font-semibold tracking-[1.5px] uppercase text-[#e85d26] mb-3">Features</div>
-          <h2 className="text-[clamp(36px,4vw,54px)] font-extrabold tracking-[-2px] leading-[1.05] mb-4 text-[#0d0d0d]" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <h2 className="text-[clamp(36px,4vw,54px)] font-extrabold tracking-[-2px] leading-[1.05] mb-4 text-[#0d0d0d]" style={{ fontFamily: 'var(--qk-serif)' }}>
             Everything you need to win
           </h2>
           <p className="text-[17px] text-[#3d3d3d] max-w-[540px] leading-[1.65] mb-14">
@@ -209,7 +209,7 @@ export default function Landing({ onEnterApp }: { onEnterApp: () => void }) {
             ].map((feat, i) => (
               <div key={i} className="bg-[#f5f3ee] px-8 py-8 hover:bg-white transition-colors">
                 <div className="text-[28px] mb-[18px]">{feat.icon}</div>
-                <div className="text-[19px] font-bold tracking-[-0.5px] mb-2 text-[#0d0d0d]" style={{ fontFamily: 'Syne, sans-serif' }}>{feat.title}</div>
+                <div className="text-[19px] font-bold tracking-[-0.5px] mb-2 text-[#0d0d0d]" style={{ fontFamily: 'var(--qk-serif)' }}>{feat.title}</div>
                 <div className="text-[14.5px] text-[#3d3d3d] leading-[1.65]">{feat.desc}</div>
               </div>
             ))}
@@ -219,7 +219,7 @@ export default function Landing({ onEnterApp }: { onEnterApp: () => void }) {
 
       {/* CTA */}
       <div className="bg-[#0d0d0d] px-12 py-20 text-center">
-        <h2 className="text-[clamp(34px,3.5vw,50px)] font-extrabold tracking-[-2px] leading-[1.05] text-white mb-[18px]" style={{ fontFamily: 'Syne, sans-serif' }}>
+        <h2 className="text-[clamp(34px,3.5vw,50px)] font-extrabold tracking-[-2px] leading-[1.05] text-white mb-[18px]" style={{ fontFamily: 'var(--qk-serif)' }}>
           Ready to close more deals?
         </h2>
         <p className="text-base text-white/60 leading-[1.7] mb-8 max-w-[500px] mx-auto">
@@ -228,7 +228,7 @@ export default function Landing({ onEnterApp }: { onEnterApp: () => void }) {
         <button
           onClick={onEnterApp}
           className="inline-flex items-center gap-2 px-7 py-[14px] bg-[#e85d26] text-white rounded-[10px] text-[15px] font-semibold tracking-[-0.2px] hover:bg-[#d44e1a] transition-all"
-          style={{ fontFamily: 'Syne, sans-serif' }}
+          style={{ fontFamily: 'var(--qk-serif)' }}
         >
           Start free trial
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
