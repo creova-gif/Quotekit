@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useInRouterContext, useNavigate } from 'react-router-dom';
-import { supabase } from '../../../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../../../lib/supabase';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Button } from '../ui/button';
@@ -49,6 +49,12 @@ function LoginPageInner({
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
+
+    if (!isSupabaseConfigured) {
+      setError('Authentication is not configured yet. Add your Supabase credentials to .env.local to enable sign-in and sign-up.');
+      return;
+    }
+
     setLoading(true);
 
     const trimmedEmail = email.trim().toLowerCase();
