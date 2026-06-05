@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import * as Tabs from '@radix-ui/react-tabs';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { getTaxForProvince } from '../../../lib/tax';
@@ -68,6 +69,7 @@ interface ProposalEvent {
 
 export default function Builder({ onNavigate }: { onNavigate: (page: string) => void }) {
   const { user, profile } = useAuth();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('ai');
   const [loading, setLoading] = useState(true);
 
@@ -554,7 +556,7 @@ export default function Builder({ onNavigate }: { onNavigate: (page: string) => 
           <button
             type="button"
             className="px-3 py-[6px] rounded-[10px] text-[13px] border border-[--qk-bdr] bg-transparent text-[--qk-ink2] hover:bg-[--qk-s1] hover:text-[--qk-ink] outline-none focus-visible:ring-2 focus-visible:ring-[--qk-blue] transition-all flex items-center gap-[5px] cursor-pointer font-medium min-h-[44px]"
-            onClick={() => toast.success('PDF generated successfully for Volta Goods!')}
+            onClick={() => window.print()}
           >
             <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -1320,8 +1322,26 @@ function SendPanel({ clientEmail = '', clientName = '', proposalTitle = '', prop
 
     setSending(true);
     try {
-      // Simulate/trigger Resend endpoint
-      // We will perform a Supabase RLS update of the status to 'sent'
+      // 1. Call the Resend email endpoint
+      const portalUrl = `${window.location.origin}/portal/${proposalId}`;
+      const response = await fetch('/api/send-proposal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: email,
+          subject,
+          note,
+          portalUrl,
+          proposalId,
+          clientName
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send email via Resend API');
+      }
+
+      // 2. Perform Supabase RLS update of the status to 'sent'
       const { error } = await supabase
         .from('proposals')
         .update({ status: 'sent' })
@@ -1329,11 +1349,11 @@ function SendPanel({ clientEmail = '', clientName = '', proposalTitle = '', prop
 
       if (error) throw error;
 
-      // Mock email log to events
+      // 3. Log standard email transaction record in proposal_events
       await supabase.from('proposal_events').insert({
         proposal_id: proposalId,
         event_type: 'sent',
-        metadata: { to: email, subject }
+        metadata: { to: email, subject, portalUrl }
       });
 
       toast.success(`✓ Proposal sent to ${email}`);

@@ -261,3 +261,45 @@
     line-height: 1.5;
   }
 }
+
+@media print {
+  @page {
+    margin: 0.75in;
+    size: letter portrait;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide navigation, sidebars, and non-printable elements */
+  nav, header, footer, aside, .no-print, [role="navigation"], [data-radix-popper-content-wrapper] {
+    display: none !important;
+  }
+
+  /* Ensure main content takes full width */
+  main, .print-full-width {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Avoid page breaks inside important sections */
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Specific Builder overrides */
+  .print-proposal-doc {
+    background: white !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}

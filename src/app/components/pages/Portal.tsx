@@ -65,9 +65,6 @@ export default function Portal() {
   const [sender, setSender] = useState<Sender | null>(null);
 
   const [selectedPkg, setSelectedPkg] = useState<ProposalPackage | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'mpesa' | 'bank'>('card');
-  const [mpesaPhone, setMpesaPhone] = useState('');
-  const [mpesaLoading, setMpesaLoading] = useState(false);
   const [signatureData, setSignatureData] = useState<string | null>(null);
   const [signedAt, setSignedAt] = useState<string | null>(null);
   const [accepted, setAccepted] = useState(false);
@@ -189,37 +186,6 @@ export default function Portal() {
     };
   }, [token]);
 
-  const handleMpesaSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!mpesaPhone.trim()) {
-      toast.error('Please enter your M-Pesa phone number');
-      return;
-    }
-    setMpesaLoading(true);
-    try {
-      // Simulate Safaricom STK push trigger
-      toast.success('M-Pesa STK push sent. Please check your phone to authorize payment.');
-      
-      // Update proposal status
-      if (proposal) {
-        await supabase
-          .from('proposals')
-          .update({ status: 'accepted' })
-          .eq('id', proposal.id);
-        
-        await supabase.from('proposal_events').insert({
-          proposal_id: proposal.id,
-          event_type: 'payment_initiated',
-          metadata: { method: 'mpesa', phone: mpesaPhone }
-        });
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'M-Pesa push failed');
-    } finally {
-      setMpesaLoading(false);
-    }
-  };
-
   const handlePortalAccept = async (cardSuccess: boolean, stripeMethod?: string) => {
     if (!proposal) return;
     if (!signatureData) {
@@ -246,7 +212,7 @@ export default function Portal() {
         event_type: 'accepted',
         metadata: {
           package: selectedPkg?.label,
-          payment: stripeMethod || (paymentMethod === 'mpesa' ? 'mpesa' : 'card'),
+          payment: stripeMethod || 'card',
           card_success: cardSuccess
         }
       });
@@ -374,70 +340,14 @@ export default function Portal() {
           {/* Payment Selection & Card Restriction Checks */}
           <div className="pb-5 border-b border-[--qk-bdr]">
             <h2 className="text-[10px] font-semibold tracking-wider uppercase text-[--qk-ink3] mb-3">Payment details</h2>
-            <div className="flex gap-2.5 mb-4">
-              <button
-                type="button"
-                className={`flex-1 px-3 py-3 border rounded-[12px] text-center cursor-pointer text-[12.5px] font-semibold transition-all outline-none focus-visible:ring-2 focus-visible:ring-[--qk-blue] ${
-                  paymentMethod === 'card'
-                    ? 'border-[--qk-blue] bg-[--qk-blue-l] text-[--qk-blue]'
-                    : 'border-[--qk-bdr] bg-transparent text-[--qk-ink2]'
-                }`}
-                onClick={() => setPaymentMethod('card')}
-              >
-                <div className="text-[16px] mb-0.5" aria-hidden="true">💳</div>
-                Card / Stripe
-              </button>
-
-              {isEastAfrica && (
-                <button
-                  type="button"
-                  className={`flex-1 px-3 py-3 border rounded-[12px] text-center cursor-pointer text-[12.5px] font-semibold transition-all outline-none focus-visible:ring-2 focus-visible:ring-[--qk-blue] ${
-                    paymentMethod === 'mpesa'
-                      ? 'border-[--qk-blue] bg-[--qk-blue-l] text-[--qk-blue]'
-                      : 'border-[--qk-bdr] bg-transparent text-[--qk-ink2]'
-                  }`}
-                  onClick={() => setPaymentMethod('mpesa')}
-                >
-                  <div className="text-[16px] mb-0.5" aria-hidden="true">📱</div>
-                  M-Pesa STK
-                </button>
-              )}
-            </div>
-
-            {paymentMethod === 'card' && (
-              <Elements stripe={stripePromise}>
-                <StripeCheckoutForm
-                  price={selectedPkg?.price || proposal?.total || 0}
-                  currency={proposal?.currency || 'CAD'}
-                  signed={!!signatureData}
-                  onAccept={(cardSuccess, funding) => handlePortalAccept(cardSuccess, funding)}
-                />
-              </Elements>
-            )}
-
-            {paymentMethod === 'mpesa' && (
-              <form onSubmit={handleMpesaSubmit} className="space-y-3">
-                <div>
-                  <label htmlFor="mpesa-phone" className="block text-[11.5px] font-medium text-[--qk-ink2] mb-1">M-Pesa Phone Number</label>
-                  <input
-                    id="mpesa-phone"
-                    type="tel"
-                    required
-                    placeholder="e.g. +254 712 345678"
-                    value={mpesaPhone}
-                    onChange={(e) => setMpesaPhone(e.target.value)}
-                    className="w-full max-w-[280px] px-3 py-2 border border-[--qk-bdr] rounded-[10px] text-[13px] bg-[--qk-s1] text-[--qk-ink] outline-none"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={mpesaLoading || !signatureData}
-                  className="w-full px-4 py-3 bg-[--qk-grn] hover:bg-green-700 text-white rounded-[12px] text-[13.5px] font-bold transition-colors cursor-pointer disabled:opacity-50 min-h-[44px]"
-                >
-                  {mpesaLoading ? 'Sending STK Push...' : 'Authorize STK Push & Accept'}
-                </button>
-              </form>
-            )}
+            <Elements stripe={stripePromise}>
+              <StripeCheckoutForm
+                price={selectedPkg?.price || proposal?.total || 0}
+                currency={proposal?.currency || 'CAD'}
+                signed={!!signatureData}
+                onAccept={(cardSuccess, funding) => handlePortalAccept(cardSuccess, funding)}
+              />
+            </Elements>
           </div>
         </div>
       </div>

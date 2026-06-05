@@ -1,15 +1,16 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuth } from '../../../contexts/AuthContext';
 
-// Helper function to determine greeting based on hour of the day
-function getGreeting(hours: number): string {
+// Helper function to determine greeting key based on hour of the day
+function getGreetingKey(hours: number): string {
   if (hours >= 4 && hours < 12) {
-    return 'Good morning';
+    return 'good_morning';
   } else if (hours >= 12 && hours < 17) {
-    return 'Good afternoon';
+    return 'good_afternoon';
   } else {
-    return 'Good evening';
+    return 'good_evening';
   }
 }
 
@@ -80,11 +81,14 @@ const AUTOMATIONS: Automation[] = [
 
 export default function Dashboard({ onNavigate }: { onNavigate: (page: string) => void }) {
   const { user, profile } = useAuth();
+  const { t } = useTranslation();
 
-  const greeting = useMemo(() => {
+  const greetingKey = useMemo(() => {
     const hours = new Date().getHours();
-    return getGreeting(hours);
+    return getGreetingKey(hours);
   }, []);
+
+  const greeting = t(greetingKey);
 
   const name = useMemo(() => {
     return getFirstName(profile, user);
@@ -97,7 +101,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (page: string) =
           {greeting}, <em className="italic text-[--qk-blue]">{name}.</em>
         </h1>
         <p className="text-[13px] text-[--qk-ink2] mt-[3px]">
-          3 proposals need follow-up · 1 contract awaiting signature · 1 meeting booked today at 2pm
+          {t('dashboard_subtitle')}
         </p>
       </div>
 
@@ -106,7 +110,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (page: string) =
         type="button"
         onClick={() => onNavigate('quickpropose')}
         className="group w-full text-left bg-[--qk-pur-l] border border-[--qk-pur-m] rounded-[14px] px-4 py-[14px] mb-5 flex items-center gap-3 cursor-pointer hover:bg-[--qk-pur-m] transition-colors focus-visible:ring-2 focus-visible:ring-qk-blue outline-none"
-        aria-label="Quick-propose — draft a full proposal in 60 seconds. Answer 5 questions. AI writes, prices, and structures your entire proposal automatically."
+        aria-label={t('quick_propose_banner_title')}
       >
         <div className="w-9 h-9 bg-[--qk-pur] rounded-[10px] flex items-center justify-center flex-shrink-0">
           <svg width="17" height="17" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
@@ -115,14 +119,14 @@ export default function Dashboard({ onNavigate }: { onNavigate: (page: string) =
         </div>
         <div className="flex-1">
           <div className="text-[13.5px] font-medium mb-[1px]" style={{ color: '#4c1d95' }}>
-            Quick-propose — draft a full proposal in 60 seconds
+            {t('quick_propose_banner_title')}
           </div>
           <div className="text-[12px] text-[--qk-pur]">
-            Answer 5 questions. AI writes, prices, and structures your entire proposal automatically.
+            {t('quick_propose_banner_desc')}
           </div>
         </div>
         <span className="px-3 py-[6px] rounded-[10px] bg-[--qk-pur-l] border border-[--qk-pur-m] text-[--qk-pur] text-[13px] flex-shrink-0 group-hover:bg-[--qk-pur-m] transition-colors">
-          Start now →
+          {t('start_now')}
         </span>
       </button>
 
@@ -130,41 +134,41 @@ export default function Dashboard({ onNavigate }: { onNavigate: (page: string) =
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <StatCard
           icon={<path d="M9 12h6M9 16h4M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>}
-          label="Active proposals"
+          label={t('active_proposals')}
           value="24"
-          delta="↑ 3 this week"
+          delta={t('active_proposals_delta')}
           up
         />
         <StatCard
           icon={<><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>}
-          label="Open rate"
+          label={t('open_rate')}
           value="78%"
-          delta="↑ 12% vs last mo"
+          delta={t('open_rate_delta')}
           up
         />
         <StatCard
           icon={<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>}
-          label="Win rate"
+          label={t('win_rate')}
           value="41%"
-          delta="↓ 3% vs last mo"
+          delta={t('win_rate_delta')}
           up={false}
         />
         <StatCard
           icon={<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></>}
-          label="Revenue closed"
+          label={t('revenue_closed')}
           value="$28.4k"
-          delta="↑ $4.2k"
+          delta={t('revenue_delta')}
           up
         />
       </div>
 
       {/* Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_320px] gap-4 mb-4">
-        <Card title="Recent proposals" action="View all →" onAction={() => onNavigate('builder')}>
+        <Card title={t('recent_proposals')} action={t('view_all')} onAction={() => onNavigate('builder')}>
           <ProposalList />
         </Card>
 
-        <Card title="Today's schedule" action="Manage →" onAction={() => onNavigate('scheduler')}>
+        <Card title={t('todays_schedule')} action={t('manage')} onAction={() => onNavigate('scheduler')}>
           <div className="p-4">
             <button
               type="button"
@@ -177,7 +181,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (page: string) =
                 </svg>
               </div>
               <div>
-                <div className="text-[13px] font-medium">Discovery call — Marcus Chen</div>
+                <div className="text-[13px] font-medium">{t('discovery_call')}</div>
                 <div className="text-[11.5px] text-[--qk-blue]">2:00 PM · 30 min · Google Meet</div>
               </div>
             </button>
@@ -193,7 +197,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (page: string) =
                 </svg>
               </div>
               <div>
-                <div className="text-[13px] font-medium">Strategy review — Opal Events</div>
+                <div className="text-[13px] font-medium">{t('strategy_review')}</div>
                 <div className="text-[11.5px] text-[--qk-ink3]">4:30 PM · 60 min · Zoom</div>
               </div>
             </button>
@@ -204,13 +208,13 @@ export default function Dashboard({ onNavigate }: { onNavigate: (page: string) =
                 className="text-[12px] text-[--qk-blue] cursor-pointer hover:underline focus-visible:ring-2 focus-visible:ring-qk-blue outline-none rounded px-1"
                 onClick={() => onNavigate('scheduler')}
               >
-                + Schedule meeting
+                {t('schedule_meeting')}
               </button>
             </div>
           </div>
         </Card>
 
-        <Card title="Activity" action="Mark read" className="md:col-span-2 lg:col-span-1" onAction={() => toast.success('All activities marked as read')}>
+        <Card title={t('activity')} action={t('mark_read')} className="md:col-span-2 lg:col-span-1" onAction={() => toast.success('All activities marked as read')}>
           <ActivityFeed />
         </Card>
       </div>
@@ -218,8 +222,8 @@ export default function Dashboard({ onNavigate }: { onNavigate: (page: string) =
       {/* Bottom Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card
-          title="Revenue · 6 months"
-          headerRight={<div className="text-[12px] text-[--qk-ink3]">Target: <strong className="text-[--qk-grn]">$45k</strong></div>}
+          title={t('revenue_6_months')}
+          headerRight={<div className="text-[12px] text-[--qk-ink3]">{t('target')}: <strong className="text-[--qk-grn]">{t('target_amount')}</strong></div>}
         >
           <div
             className="flex items-end gap-[5px] h-[90px] px-[17px] py-2 pb-3"
@@ -232,7 +236,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (page: string) =
           </div>
         </Card>
 
-        <Card title="Automation activity" action="View all →" onAction={() => onNavigate('automation')}>
+        <Card title={t('automation_activity')} action={t('view_all')} onAction={() => onNavigate('automation')}>
           <AutomationFeed />
         </Card>
       </div>

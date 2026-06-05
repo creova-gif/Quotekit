@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../contexts/AuthContext';
 import { getPlan } from '../../../lib/plans';
 import { AuthLoadingScreen } from '../auth/AuthGuard';
@@ -178,6 +179,7 @@ function SidebarItem({
 
 function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   const { user, profile } = useAuth();
+  const { t, i18n } = useTranslation();
 
   const fullName = profile?.full_name || (user?.email ? user.email.split('@')[0] : 'User');
   const email = profile?.email || user?.email || '';
@@ -186,23 +188,23 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   const planId = profile?.plan ?? 'starter';
   const planName = getPlan(planId).name;
 
-  let planText = `${planName} plan`;
-  let upgradeText = 'Upgrade plan →';
+  let planText = t('plan_standard', { planName });
+  let upgradeText = t('upgrade_plan');
 
   if (profile?.subscription_status === 'trialing') {
     const daysLeft = getDaysLeft(profile?.trial_ends_at);
-    planText = `${planName} (Trial) · ${daysLeft} days left`;
+    planText = t('plan_trial', { planName, daysLeft });
   } else if (profile?.subscription_status) {
     const status = profile.subscription_status;
-    planText = `${planName} plan · ${status.charAt(0).toUpperCase() + status.slice(1)}`;
+    planText = t('plan_status', { planName, status: status.charAt(0).toUpperCase() + status.slice(1) });
   }
 
   if (planId === 'starter') {
-    upgradeText = 'Upgrade to Pro →';
+    upgradeText = t('upgrade_to_pro');
   } else if (planId === 'pro') {
-    upgradeText = 'Upgrade to Business →';
+    upgradeText = t('upgrade_to_business');
   } else {
-    upgradeText = 'Manage billing →';
+    upgradeText = t('manage_billing');
   }
 
   return (
@@ -210,36 +212,42 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
       {/* Sidebar Items */}
       <div className="pt-1.5 flex-1 overflow-y-auto">
         <div className="px-[13px] pt-[13px] pb-1 text-[10px] font-semibold tracking-[1px] uppercase text-qk-ink3">
-          Workspace
+          {t('workspace')}
         </div>
 
-        {sidebarItems.map((item) => (
-          <SidebarItem
-            key={item.id}
-            icon={item.icon}
-            label={item.label}
-            to={item.path}
-            badge={item.badge}
-            badgeColor={item.badgeColor}
-            onClick={onItemClick}
-          />
-        ))}
+        {sidebarItems.map((item) => {
+          let transKey = item.id;
+          if (item.id === 'quickpropose') transKey = 'quick_propose';
+          if (item.id === 'nexusai') transKey = 'nexus_ai';
+          if (item.id === 'portal') transKey = 'client_portal';
+          return (
+            <SidebarItem
+              key={item.id}
+              icon={item.icon}
+              label={t(transKey, item.label)}
+              to={item.path}
+              badge={item.badge}
+              badgeColor={item.badgeColor}
+              onClick={onItemClick}
+            />
+          );
+        })}
 
         <div className="h-[1px] bg-qk-bdr mx-[13px] my-[5px]"></div>
 
         <div className="px-[13px] pt-[13px] pb-1 text-[10px] font-semibold tracking-[1px] uppercase text-qk-ink3">
-          Recent
+          {t('recent')}
         </div>
         <SidebarItem
           icon="file"
-          label="Volta Goods"
+          label={t('volta_goods')}
           small
           to="/dashboard/builder"
           onClick={onItemClick}
         />
         <SidebarItem
           icon="file"
-          label="Opal Events"
+          label={t('opal_events')}
           small
           to="/dashboard/builder"
           onClick={onItemClick}
@@ -259,6 +267,33 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
           </div>
           <div className="text-[12px] text-qk-amb font-semibold">{upgradeText}</div>
         </Link>
+
+        {/* Language Selection Toggle */}
+        <div className="flex items-center justify-between px-2 py-1.5 mb-[5px] text-[11px] text-qk-ink2 border border-qk-bdr rounded-md bg-qk-s1">
+          <span className="font-medium">Langue:</span>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => i18n.changeLanguage('en-CA')}
+              className={`px-1.5 py-0.5 rounded text-[10px] font-semibold cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-qk-blue ${
+                i18n.language.startsWith('en')
+                  ? 'bg-qk-blue text-white'
+                  : 'bg-transparent text-qk-ink3 hover:text-qk-ink'
+              }`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => i18n.changeLanguage('fr-CA')}
+              className={`px-1.5 py-0.5 rounded text-[10px] font-semibold cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-qk-blue ${
+                i18n.language.startsWith('fr')
+                  ? 'bg-qk-blue text-white'
+                  : 'bg-transparent text-qk-ink3 hover:text-qk-ink'
+              }`}
+            >
+              FR
+            </button>
+          </div>
+        </div>
 
         <Link
           to="/dashboard/settings"
@@ -313,6 +348,7 @@ function BottomTabItem({
 export function AppLayout() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { user, profile } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
 
   // Close drawer on navigation
@@ -344,7 +380,7 @@ export function AppLayout() {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-white focus:text-qk-blue focus:px-4 focus:py-2.5 focus:border focus:border-qk-blue focus:rounded-md focus:z-[999] outline-none focus:ring-2 focus:ring-qk-blue"
       >
-        Skip to main content
+        {t('skip_to_main')}
       </a>
 
       {/* Topbar Header */}
@@ -354,7 +390,7 @@ export function AppLayout() {
           <button
             onClick={() => setIsDrawerOpen(true)}
             className="lg:hidden w-11 h-11 flex items-center justify-center rounded-md hover:bg-qk-s1 text-qk-ink2 transition-colors mr-2 focus-visible:ring-2 focus-visible:ring-qk-blue outline-none"
-            aria-label="Open sidebar menu"
+            aria-label={t('open_sidebar')}
             aria-expanded={isDrawerOpen}
             aria-controls="mobile-sidebar-drawer"
           >
@@ -387,8 +423,8 @@ export function AppLayout() {
             <Search className="w-3.5 h-3.5 text-qk-ink3 flex-shrink-0" aria-hidden="true" />
             <input
               type="text"
-              placeholder="Search…"
-              aria-label="Search dashboard"
+              placeholder={t('search_placeholder')}
+              aria-label={t('search_placeholder')}
               className="border-none bg-transparent outline-none text-[13px] text-qk-ink w-full placeholder:text-qk-ink3 focus:ring-0"
               style={{ fontFamily: 'var(--qk-sans)' }}
             />
@@ -397,7 +433,7 @@ export function AppLayout() {
           {/* Notifications */}
           <button
             className="relative w-[29px] h-[29px] rounded-md bg-transparent border border-qk-bdr flex items-center justify-center cursor-pointer transition-all hover:bg-qk-s1 focus-visible:ring-2 focus-visible:ring-qk-blue outline-none"
-            aria-label="View notifications"
+            aria-label={t('view_notifications')}
           >
             <Bell className="w-3.5 h-3.5 text-qk-ink2" aria-hidden="true" />
             <div className="absolute top-[5px] right-[5px] w-[6px] h-[6px] rounded-full bg-qk-red border-[1.5px] border-qk-s0" aria-hidden="true"></div>
@@ -409,7 +445,7 @@ export function AppLayout() {
             className="hidden sm:flex px-3 py-[6px] rounded-[10px] text-[13px] items-center gap-[5px] border border-qk-blue bg-qk-blue text-white hover:bg-qk-blue-d transition-all focus-visible:ring-2 focus-visible:ring-qk-blue focus-visible:ring-offset-2 outline-none"
           >
             <Zap className="w-3.5 h-3.5" aria-hidden="true" />
-            Quick-propose
+            {t('quick_propose')}
           </Link>
 
           {/* User profile avatar link */}
@@ -454,14 +490,22 @@ export function AppLayout() {
         aria-label="Bottom Navigation"
         className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-qk-s0 border-t border-qk-bdr flex items-center justify-around z-[100] pb-safe"
       >
-        {bottomNavItems.map((item) => (
-          <BottomTabItem
-            key={item.path}
-            label={item.label}
-            to={item.path}
-            icon={item.icon}
-          />
-        ))}
+        {bottomNavItems.map((item) => {
+          let transKey = 'overview';
+          if (item.path.endsWith('quickpropose')) transKey = 'quick_propose';
+          else if (item.path.endsWith('builder')) transKey = 'builder';
+          else if (item.path.endsWith('clients')) transKey = 'clients';
+          else if (item.path.endsWith('settings')) transKey = 'settings';
+
+          return (
+            <BottomTabItem
+              key={item.path}
+              label={t(transKey, item.label)}
+              to={item.path}
+              icon={item.icon}
+            />
+          );
+        })}
       </nav>
 
       {/* Mobile/Tablet Slide-in Overlay Drawer Backdrop */}
