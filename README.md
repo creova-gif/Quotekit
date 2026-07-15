@@ -10,7 +10,7 @@
 
 QuoteKit is a web app for small businesses to build and send quotes/proposals quickly, track clients and projects, and run light CRM workflows. Current screens include a dashboard, a proposal builder, a "QuickPropose" fast-quote flow, client and project management, lead capture forms, a scheduler, an inbox, a content library, automations, analytics, and a client-facing portal. It also includes "Nexus AI" — an in-app AI assistant (currently a mocked chat demo) that drafts proposals from a business's win-rate and pricing history.
 
-[ADD SCREENSHOT HERE]
+![QuoteKit landing page](docs/screenshots/dashboard.png)
 
 ## Status: In active development
 
