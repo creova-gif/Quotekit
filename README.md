@@ -1,43 +1,63 @@
 # QuoteKit
 
-**A quote-and-proposal builder for small service businesses — quick proposals, an AI proposal assistant, a client portal, lead forms, and scheduling in one dashboard. Built by CREOVA Solutions.**
+**A quote-and-proposal builder for small service businesses — quick proposals, an AI proposal assistant, a client portal, lead forms, and scheduling in one dashboard.**
 
 ![Status](https://img.shields.io/badge/status-active_development-yellow)
 ![License](https://img.shields.io/badge/license-proprietary-red)
 ![Stack](https://img.shields.io/badge/stack-React_%2F_Vite-blue)
 
-## What this is
-
-QuoteKit is a web app for small businesses to build and send quotes/proposals quickly, track clients and projects, and run light CRM workflows. Current screens include a dashboard, a proposal builder, a "QuickPropose" fast-quote flow, client and project management, lead capture forms, a scheduler, an inbox, a content library, automations, analytics, and a client-facing portal. It also includes "Nexus AI" — an in-app AI assistant (currently a mocked chat demo) that drafts proposals from a business's win-rate and pricing history.
-
 ![QuoteKit landing page](docs/screenshots/dashboard.png)
 
-## Status: In active development
+## Overview
+A web app for small businesses to build and send quotes/proposals quickly, track clients and projects, and run light CRM workflows.
 
-The frontend is substantially built out across most core flows, but there's no backend wired up yet — data, including the Nexus AI assistant's responses, is currently local/mocked. Not ready for real customer use.
+## Problem
+Small service businesses either send proposals ad hoc (email, PDF, no tracking) or pay for CRM suites built for much larger sales teams.
 
-### Roadmap
-- Wire up a real backend/data layer
-- Connect Nexus AI to a real model (currently simulated responses)
-- Auth hardening (an `AuthGuard`/`LoginPage` shell currently exists but is unverified)
+## Solution
+A focused proposal builder with an AI drafting assistant, client portal, lead capture, and scheduling, sized for a small service business rather than an enterprise sales org.
 
-## Quickstart
+## Key Capabilities
+- Dashboard, proposal builder, "QuickPropose" fast-quote flow
+- Client/project management, lead capture forms, scheduler, inbox
+- Content library, automations, analytics
+- Client-facing portal
+- "Nexus AI" in-app assistant for drafting proposals from win-rate/pricing history
 
+## Architecture
+React/Vite frontend. Uses a clean environment-variable-based Supabase configuration (see `CLAUDE.md`) rather than a hardcoded project ID. **No backend is currently wired up** — all data, including the Nexus AI assistant's responses, is local/mocked.
+
+## Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React, Vite |
+| Backend | Supabase (env-var configured, not yet connected to real data) |
+
+## Repository Structure
+- `src/app/components/pages/` — main app screens (Dashboard, Builder, Clients, Projects, Scheduler, NexusAI assistant)
+- `src/app/components/auth/` — login/auth guard
+- `src/i18n/` — localization
+
+## Getting Started
 ```bash
 npm i
 npm run dev
 ```
 
-## Folder overview
+## Project Status
+Frontend substantially built out across most core flows; not ready for real customer use — no backend, mocked AI responses, unverified auth.
 
-- `src/app/components/pages/` — main app screens (Dashboard, Builder, Clients, Projects, Scheduler, NexusAI assistant, etc.)
-- `src/app/components/auth/` — login/auth guard
-- `src/i18n/` — localization
+## Roadmap
+- [ ] Wire up a real backend/data layer
+- [ ] Connect Nexus AI to a real model (currently simulated)
+- [ ] Auth hardening (`AuthGuard`/`LoginPage` shell exists but is unverified)
 
 ## Contributing
-
-See the [org-wide CONTRIBUTING.md](https://github.com/creova-gif/.github/blob/main/CONTRIBUTING.md) for guidelines, including our AI-assisted contribution policy.
+See the [org-wide CONTRIBUTING.md](https://github.com/creova-gif/.github/blob/main/CONTRIBUTING.md).
 
 ## License
-
 Proprietary — © CREOVA. All rights reserved.
+
+## Author / Organization
+Built by [Justin Mafie](https://github.com/creova-gif) under CREOVA.
